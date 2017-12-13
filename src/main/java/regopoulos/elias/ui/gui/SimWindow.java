@@ -1,4 +1,4 @@
-package regopoulos.elias.ui;
+package regopoulos.elias.ui.gui;
 
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -7,12 +7,12 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import regopoulos.elias.ui.SimulationUI;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class SimWindow extends Application
+public class SimWindow extends Application implements SimulationUI
 {
 	//TODO: Move all properties to .properties file
 	private static final int MENU_HEIGHT= 30;
@@ -21,6 +21,7 @@ public class SimWindow extends Application
 	private static String WINDOW_TITLE;
 	static int WINDOW_WIDTH;
 	static int WINDOW_HEIGHT;
+	static Stage primaryStage;
 	private MenuBar menuBar;
 	private TeamPane teamPane;
 	private Canvas canvas;
@@ -31,18 +32,17 @@ public class SimWindow extends Application
 
 	private Renderer renderer;
 
-	public SimWindow()
+
+	@Override
+	public void start(String[] args)
 	{
 		loadProperties();
-	}
-
-	public void startWindow(String[] args)
-	{
 		launch(args);
 	}
 
 	public void start(Stage primaryStage)
 	{
+		SimWindow.primaryStage = primaryStage;
 		primaryStage.setTitle(WINDOW_TITLE);
 
 		Group root = populateUI();

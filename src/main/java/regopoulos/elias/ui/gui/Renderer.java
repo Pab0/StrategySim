@@ -1,7 +1,6 @@
-package regopoulos.elias.ui;
+package regopoulos.elias.ui.gui;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 public class Renderer
 {

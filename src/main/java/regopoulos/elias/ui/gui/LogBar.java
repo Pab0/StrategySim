@@ -1,4 +1,4 @@
-package regopoulos.elias.ui;
+package regopoulos.elias.ui.gui;
 
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
