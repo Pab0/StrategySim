@@ -1,17 +1,64 @@
 package regopoulos.elias.scenario;
 
+import javafx.geometry.Dimension2D;
+
+import java.util.EnumMap;
+
+/*
+ * Gaia is the omnipresent and omniscient team, Nature.
+ */
 public class GaiaTeam implements MapViewTeam
 {
+	private static final String NAME = "Gaia";
 	private boolean[][] visibleMap;
+	private Agent[] agents;
+
 	public GaiaTeam()
 	{
-		//TODO
+		this.agents = new Agent[1];
+		agents[0] = new Agent(true);
 	}
 
 	@Override
 	public boolean[][] getVisibleMap()
 	{
-		//TODO
+		return this.visibleMap;
+	}
+
+	@Override
+	public void setVisibleMap(Dimension2D mapDimension)
+	{
+		this.visibleMap = new boolean[(int)mapDimension.getHeight()][(int)mapDimension.getWidth()];
+		for (int i=0; i<mapDimension.getHeight(); i++)
+		{
+			for (int j=0; j<mapDimension.getWidth(); j++)
+			{
+				this.visibleMap[i][j] = true;	//Gaia sees all, for Gaia is the World itself.
+			}
+		}
+	}
+
+	@Override
+	public Agent[] getAgents()
+	{
+		return agents;
+	}
+
+	@Override
+	public EnumMap<TerrainType, Resource> getResources()
+	{
 		return null;
+	}
+
+	@Override
+	public Resource getResource(TerrainType resourceType)
+	{
+		return null;
+	}
+
+	@Override
+	public String toString()
+	{
+		return GaiaTeam.NAME;
 	}
 }

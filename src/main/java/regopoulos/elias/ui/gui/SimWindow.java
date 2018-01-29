@@ -7,6 +7,11 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import regopoulos.elias.StartSim;
+import regopoulos.elias.scenario.Agent;
+import regopoulos.elias.scenario.MapViewTeam;
+import regopoulos.elias.sim.SimLoop;
+import regopoulos.elias.sim.Simulation;
 import regopoulos.elias.ui.SimulationUI;
 
 import java.io.InputStream;
@@ -30,8 +35,11 @@ public class SimWindow extends Application implements SimulationUI
 
 	private LogOutput logOutput;
 
+	private Camera camera;
 	private Renderer renderer;
 
+	private MapViewTeam selectedTeam;
+	private Agent selectedAgent;
 
 	@Override
 	public void start(String[] args)
@@ -46,10 +54,11 @@ public class SimWindow extends Application implements SimulationUI
 		primaryStage.setTitle(WINDOW_TITLE);
 
 		Group root = populateUI();
+		StartSim.simUI = this;
 		logOutput = logBar;
 		InputHandler inputHandler = new InputHandler(logOutput);
 
-		renderer.render();
+		renderer.render(true);
 
 		Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
 		scene.setOnKeyTyped( (event) -> inputHandler.keyTyped(event));
@@ -58,6 +67,7 @@ public class SimWindow extends Application implements SimulationUI
 		primaryStage.setScene(scene);
 		canvas.requestFocus();
 		primaryStage.show();
+		System.out.println("Done");
 	}
 
 	private Group populateUI()
@@ -89,6 +99,46 @@ public class SimWindow extends Application implements SimulationUI
 		return root;
 	}
 
+	public void initOnSimLoad()
+	{
+		this.selectedTeam = Simulation.sim.getScenario().getTeams()[0];
+		this.selectedAgent = this.selectedTeam.getAgents()[0];
+		this.camera = new Camera(this.canvas);
+		this.renderer.setCamera(camera);
+		SimLoop simLoop = new SimLoop();
+		Simulation.sim.setSimLoop(simLoop);
+		this.teamPane.initOnSimLoad();
+		this.menuBar.initOnSimLoad();
+
+		simLoop.start();
+	}
+
+	@Override
+	public MapViewTeam getSelectedTeam()
+	{
+		return selectedTeam;
+	}
+
+	@Override
+	public void setSelectedTeam(MapViewTeam selectedTeam)
+	{
+		this.selectedTeam = selectedTeam;
+		System.out.println("Selected team: " + this.selectedTeam);
+		teamPane.changeSelectedTeam();
+	}
+
+	@Override
+	public Agent getSelectedAgent()
+	{
+		return selectedAgent;
+	}
+
+	@Override
+	public void setSelectedAgent(Agent selectedAgent)
+	{
+		this.selectedAgent = selectedAgent;
+	}
+
 	private static void loadProperties()
 	{
 		Properties prop = new Properties();
@@ -105,5 +155,15 @@ public class SimWindow extends Application implements SimulationUI
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public Camera getCamera()
+	{
+		return this.camera;
+	}
+
+	public Renderer getRenderer()
+	{
+		return renderer;
 	}
 }

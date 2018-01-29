@@ -1,5 +1,7 @@
 package regopoulos.elias.scenario;
 
+
+import javafx.geometry.Dimension2D;
 import java.util.ArrayList;
 import java.util.EnumMap;
 
@@ -47,5 +49,22 @@ class MapAnalyzer
 			}
 		}
 		return resourceContainedInMap;
+	}
+
+	static ArrayList<DropOffSite> getDropOffSites(Map map)
+	{
+		ArrayList<DropOffSite> dropOffSitesList = new ArrayList<DropOffSite>();
+		for (int i=0; i<map.getHeight(); i++)
+		{
+			for (int j=0; j<map.getWidth(); j++)
+			{
+				TerrainType type = map.map[i][j].getTerrainType();
+				if (type.isDropOffSite)
+				{
+					dropOffSitesList.add(new DropOffSite(type, new Dimension2D(j,i)));
+				}
+			}
+		}
+		return dropOffSitesList;
 	}
 }

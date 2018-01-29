@@ -2,18 +2,16 @@ package regopoulos.elias.scenario;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-/* Holds two layers of map:
-	1. The terrain layer
-	2. The team/agent layer
-
- */
 public class Map
 {
-	int width, height;
+	private int width, height;
 	Tile[][] map;
 	private ArrayList<TerrainType> resourcesInMap;
 	private ArrayList<TerrainType> teamsInMap;
+	private ArrayList<DropOffSite> dropOffSites;
 
 	public Map(File file)
 	{
@@ -36,6 +34,23 @@ public class Map
 	public ArrayList<TerrainType> getTeamsInMap()
 	{
 		return teamsInMap;
+	}
+
+	public void setDropOffSites()
+	{
+		this.dropOffSites = MapAnalyzer.getDropOffSites(this);
+	}
+
+	List<DropOffSite> getDropOffSites()
+	{
+		return dropOffSites;
+	}
+
+	/* Gets dropOffSites of team */
+	List<DropOffSite> getDropOffSites(Team team)
+	{
+		getDropOffSites();
+		return getDropOffSites().stream().filter(dropOffSite -> dropOffSite.getLnkTeam().equals(team)).collect(Collectors.toList());
 	}
 
 	public Tile[][] getTileMap()

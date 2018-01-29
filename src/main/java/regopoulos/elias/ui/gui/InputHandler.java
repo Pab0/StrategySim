@@ -1,9 +1,16 @@
 package regopoulos.elias.ui.gui;
 
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import regopoulos.elias.sim.Simulation;
 
 public class InputHandler
 {
+	private static final KeyCode MOVE_CAM_UP 	= KeyCode.W;
+	private static final KeyCode MOVE_CAM_DOWN 	= KeyCode.S;
+	private static final KeyCode MOVE_CAM_LEFT 	= KeyCode.A;
+	private static final KeyCode MOVE_CAM_RIGHT	= KeyCode.D;
+
 	private LogOutput logOutput;
 
 	InputHandler(LogOutput logOutput)
@@ -13,15 +20,47 @@ public class InputHandler
 
 	void keyTyped(KeyEvent event)
 	{
-		System.out.println("Key typed: " + event.getCharacter());
-		logOutput.log("Key typed: " + event.getCharacter());
+		//Everything is covered by keyPressed/Released
 	}
+
 	void keyPressed(KeyEvent event)
 	{
-		System.out.println("Key pressed: " + event.getCharacter());
+		System.out.println("Key pressed: " + event.getCode());
+		System.out.println("Getting keycode: " + KeyCode.getKeyCode(event.getCharacter()));
+		keyPressedReleased(event.getCode(),true);
 	}
+
 	void keyReleased(KeyEvent event)
 	{
+		keyPressedReleased(event.getCode(),false);
+	}
 
+	/* Called on key pressed or released, to avoid code duplication.
+	 * The `pressed` boolean determines whether the key has been pressed or released.
+	 */
+	private void keyPressedReleased(KeyCode keyCode, boolean pressed)
+	{
+		if (Simulation.sim.getScenario()==null)
+		{
+			return;	//Scenario, and thus Camera, might not have been instantiated
+		}
+		SimWindow sw = (SimWindow)Simulation.sim.getSimUI();
+		Camera camera = sw.getCamera();
+		if (keyCode==MOVE_CAM_UP)
+		{
+			camera.setMovingUp(pressed);
+		}
+		if (keyCode==MOVE_CAM_DOWN)
+		{
+			camera.setMovingDown(pressed);
+		}
+		if (keyCode==MOVE_CAM_LEFT)
+		{
+			camera.setMovingLeft(pressed);
+		}
+		if (keyCode==MOVE_CAM_RIGHT)
+		{
+			camera.setMovingRight(pressed);
+		}
 	}
 }

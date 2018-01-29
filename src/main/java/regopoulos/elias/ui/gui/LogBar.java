@@ -37,6 +37,12 @@ public class LogBar extends VBox implements Updateable, LogOutput
 	}
 
 	@Override
+	public void initOnSimLoad()
+	{
+
+	}
+
+	@Override
 	public void log(String logStr)
 	{
 		logArea.appendText(logStr + "\n");

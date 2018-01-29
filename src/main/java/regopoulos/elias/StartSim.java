@@ -10,7 +10,7 @@ public class StartSim
 {
 	private static boolean render = true;
 
-	private static SimulationUI simUI;
+	public static SimulationUI simUI;
 
 	public static void main(String[] args)
 	{

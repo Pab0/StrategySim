@@ -43,4 +43,10 @@ public class ActionPane extends VBox implements Updateable
 	{
 
 	}
+
+	@Override
+	public void initOnSimLoad()
+	{
+
+	}
 }

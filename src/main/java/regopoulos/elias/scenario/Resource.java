@@ -18,4 +18,18 @@ public class Resource
 		this.goal = Simulation.sim.getScenario().getResourceGoal(type);
 	}
 
+	public int getGoal()
+	{
+		return goal;
+	}
+
+	public int getCurrent()
+	{
+		return current;
+	}
+
+	public TerrainType getType()
+	{
+		return type;
+	}
 }

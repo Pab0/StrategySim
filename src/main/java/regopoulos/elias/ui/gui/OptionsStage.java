@@ -1,5 +1,8 @@
 package regopoulos.elias.ui.gui;
 
+import com.sun.org.apache.regexp.internal.RE;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -14,17 +17,19 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import regopoulos.elias.StartSim;
 import regopoulos.elias.scenario.*;
 import regopoulos.elias.sim.Simulation;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.EnumMap;
 
 
 public class OptionsStage extends Stage
 {
-	private static final int WIDTH = 600;
-	private static final int HEIGHT = 800;
+	private static final int WIDTH 	= 600;
+	private static final int HEIGHT	= 800;
 	private static final int CANVAS_WIDTH = WIDTH-100;
 	private static final int CANVAS_HEIGHT = 800/2;
 
@@ -36,21 +41,49 @@ public class OptionsStage extends Stage
 	private ObservableList<TerrainType> teamsInMap;
 
 	//EnumMaps for the Scenario to be set to
+	//TODO display default values in TextBox
 	private EnumMap<TerrainType, Integer> resourceGoals;
 	private EnumMap<AgentType, Integer> agentNum;
 
 	OptionsStage()
 	{
-		this.resourcesInMap = FXCollections.observableArrayList();
-		this.teamsInMap = FXCollections.observableArrayList();
-		this.resourceGoals = new EnumMap<TerrainType, Integer>(TerrainType.class);
-		this.agentNum = new EnumMap<AgentType, Integer>(AgentType.class);
+		this.resourcesInMap	= 	FXCollections.observableArrayList();
+		this.teamsInMap 	=	FXCollections.observableArrayList();
+		this.resourceGoals 	= 	new EnumMap<TerrainType, Integer>(TerrainType.class);
+		this.agentNum 		=	new EnumMap<AgentType, Integer>(AgentType.class);
+		initResourceGoals();
+		initAgentNums();
 		this.initModality(Modality.WINDOW_MODAL);
 		this.initOwner(SimWindow.primaryStage);
 		VBox vBox = populateOptionStage();
 		Scene scene = new Scene(vBox);
 		this.setScene(scene);
 		this.show();
+	}
+
+	private void initResourceGoals()
+	{
+		for (TerrainType terrainType : this.resourcesInMap)
+		{
+			this.resourceGoals.put(terrainType,0);
+		}
+		if (this.resourcesInMap.contains(TerrainType.TREE))
+		{
+			this.resourceGoals.put(TerrainType.TREE, Scenario.DEFAULT_WOOD_GOAL);
+		}
+		if (this.resourcesInMap.contains(TerrainType.GOLD))
+		{
+			this.resourceGoals.put(TerrainType.GOLD, Scenario.DEFAULT_GOLD_GOAL);
+		}
+	}
+
+	private void initAgentNums()
+	{
+		for (AgentType agentType : AgentType.values())
+		{
+			this.agentNum.put(agentType,0);
+		}
+		this.agentNum.put(AgentType.VILLAGER, Scenario.DEFAULT_VILLAGER_COUNT);
 	}
 
 	private VBox populateOptionStage()
@@ -118,9 +151,12 @@ public class OptionsStage extends Stage
 		resView.setItems(this.resourcesInMap);
 		resHBox.getChildren().add(resView);
 		TextField neededAmount = new TextField();
+		resView.getSelectionModel().selectedIndexProperty().addListener(
+				(observable, oldValue, newValue) -> neededAmount.setText(
+				this.resourceGoals.get(resourcesInMap.get(Math.max(newValue.intValue(),0))).toString()));	//max() ensures no ArrayIndex=-1 occurs
 		resHBox.getChildren().add(neededAmount);
 		Button neededResBtn = new Button("Set");
-		neededResBtn.setOnAction(event -> this.resourceGoals.put(resView.getValue(), Integer.parseInt(neededAmount.getText())));
+		neededResBtn.setOnAction(event -> this.resourceGoals.put(resView.getValue(), Math.max(0,Integer.parseInt(neededAmount.getText()))));
 		resHBox.getChildren().add(neededResBtn);
 		return resHBox;
 	}
@@ -134,9 +170,11 @@ public class OptionsStage extends Stage
 		agentsView.getItems().setAll(AgentType.values());
 		agentHBox.getChildren().add(agentsView);
 		TextField agentNum = new TextField();
+		agentsView.getSelectionModel().selectedIndexProperty().addListener(
+				(observable, oldValue, newValue) -> agentNum.setText(this.agentNum.get(AgentType.values()[newValue.intValue()]).toString()));
 		agentHBox.getChildren().add(agentNum);
 		Button agentNumBtn = new Button("Set");
-		agentNumBtn.setOnAction(event -> this.agentNum.put(agentsView.getValue(), Integer.parseInt(agentNum.getText())));
+		agentNumBtn.setOnAction(event -> this.agentNum.put(agentsView.getValue(), Math.max(0,Integer.parseInt(agentNum.getText()))));
 		agentHBox.getChildren().add(agentNumBtn);
 		return agentHBox;
 	}
@@ -197,33 +235,71 @@ public class OptionsStage extends Stage
 		System.out.println("Chose file " + mapFile.getName());
 		this.map = new Map(mapFile);
 		this.map.analyzeMap();
-		this.resourcesInMap.clear();
-		this.resourcesInMap.addAll(this.map.getResourcesInMap());
-		this.teamsInMap.clear();
-		this.teamsInMap.addAll(this.map.getTeamsInMap());
+		this.resourcesInMap.setAll(this.map.getResourcesInMap());
+		this.teamsInMap.setAll(this.map.getTeamsInMap());
 		drawMap();
+		initResourceGoals();
+		initAgentNums();
 		System.out.println("Found resources: " + this.resourcesInMap);
 	}
 
 	/* Gets called on "Start" button click */
 	private void setOptions()
 	{
-		System.out.println("Setting options");
-		Scenario scenario = new Scenario();
-		scenario.setMap(this.setMap());
-		scenario.setTeams(this.setTeams());
-		scenario.setResourceGoals(this.setResourceGoals());
-		scenario.setAgentNum(this.setAgentNum());
-		Simulation.sim.setScenario(scenario);
-		this.close();
+		boolean hasBadData = this.hasBadData();
+		if (hasBadData)
+		{
+			System.out.println("Bad data, please give valid values.");
+			return;
+		}
+		else
+		{
+			System.out.println("Setting options");
+			Scenario scenario = new Scenario();
+			Simulation.sim.setScenario(scenario);
+			scenario.setMap(this.getMap());
+			scenario.setResourceGoals(this.getResourceGoals());
+			scenario.setTeams(this.getTeams());
+			scenario.getMap().setDropOffSites();
+			scenario.setAgentNum(this.getAgentNum());
+			scenario.initTeams();
+
+			Simulation.sim.setSimUI(StartSim.simUI);
+			Simulation.sim.getSimUI().initOnSimLoad();
+
+			this.close();
+		}
 	}
 
-	private Map setMap()
+	/* Checks player input */
+	private boolean hasBadData()
+	{
+		//Check if resources to gather > 0
+		boolean zeroResourcesToGather = resourceGoals.values().stream().noneMatch(i -> i>0);
+		if (zeroResourcesToGather)
+		{
+			new Alert(Alert.AlertType.ERROR, "At least one resource goal must be non-zero.").showAndWait();
+		}
+		boolean zeroTeams = teamsInMap.isEmpty();
+		if (zeroTeams)
+		{
+			new Alert(Alert.AlertType.ERROR,"There must be at least one team in the map.").showAndWait();
+		}
+		//Check if agents per team > 0
+		boolean zeroAgents = agentNum.values().stream().noneMatch(i -> i>0);
+		if (zeroAgents)
+		{
+			new Alert(Alert.AlertType.ERROR, "Teams must have at least one agent.").showAndWait();
+		}
+		return (zeroResourcesToGather || zeroTeams || zeroAgents);
+	}
+
+	private Map getMap()
 	{
 		return this.map;
 	}
 
-	private Team[] setTeams()
+	private Team[] getTeams()
 	{
 		Team[] teams = new Team[this.teamsInMap.size()];
 		for (int i=0; i<this.teamsInMap.size(); i++)
@@ -231,29 +307,15 @@ public class OptionsStage extends Stage
 			Team team = new Team(this.teamsInMap.get(i));
 			teams[i] = team;
 		}
-		setMapViewTeams(teams);
 		return teams;
 	}
 
-	/* To be used by the renderer */ //TODO
-	public MapViewTeam[] setMapViewTeams(Team[] realTeams)
-	{
-		MapViewTeam[] mapViewTeams = new MapViewTeam[realTeams.length+1];
-		MapViewTeam gaia = new GaiaTeam();
-		mapViewTeams[0] = gaia;
-		for (int i=1; i<mapViewTeams.length; i++)
-		{
-			mapViewTeams[i] = realTeams[i-1];
-		}
-		return mapViewTeams;
-	}
-
-	private EnumMap<TerrainType, Integer> setResourceGoals()
+	private EnumMap<TerrainType, Integer> getResourceGoals()
 	{
 		return this.resourceGoals;
 	}
 
-	private EnumMap<AgentType, Integer> setAgentNum()
+	private EnumMap<AgentType, Integer> getAgentNum()
 	{
 		return this.agentNum;
 	}
