@@ -171,7 +171,7 @@ public class SimLoop extends AnimationTimer
 		boolean waitForStep = true;
 		if  (msPassed>simulationTickTime)
 		{
-			System.out.println("Ticks/sec: " + 1000/msPassed);
+//			System.out.println("Ticks/sec: " + 1000/msPassed);
 			msPassed %= simulationTickTime;	//% rather than -, in order to skip multiple accumulated frames
 			waitForStep = false;
 		}

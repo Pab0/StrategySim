@@ -20,6 +20,12 @@ public class CLUI implements SimulationUI
 	}
 
 	@Override
+	public void log(String string)
+	{
+		//TODO might not implement CLUI at all though
+	}
+
+	@Override
 	public Team getSelectedTeam()
 	{
 		//TODO might not implement CLUI at all though

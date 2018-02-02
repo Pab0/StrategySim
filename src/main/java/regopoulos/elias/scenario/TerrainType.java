@@ -21,7 +21,7 @@ public enum TerrainType
 	Image icon;
 	int capacity;	//for resources; 0 for non-resources
 	boolean isResource;
-	boolean traversable;
+	public boolean traversable;
 	boolean isDropOffSite;
 
 	private static final String ICON_FOLDER = "icons/";

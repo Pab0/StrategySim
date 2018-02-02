@@ -27,13 +27,13 @@ public class Camera
 		Map map = Simulation.sim.getScenario().getMap();
 		int mapHeight = map.getHeight();
 		int mapWidth = map.getWidth();
-		int tileWidth = 10; //TODO
+		int tileWidth = Renderer.TILE_WIDTH;
 		int canvasHeight = (int)canvas.getHeight();
 		int canvasWidth = (int)canvas.getWidth();
-		this.MAX_OFFSET_Y = mapHeight*tileWidth + canvasHeight/2;
-		this.MAX_OFFSET_X = mapWidth*tileWidth + canvasWidth/2;
-		this.MIN_OFFSET_Y = 0 - canvasHeight/2;
-		this.MIN_OFFSET_X = 0 - canvasWidth/2;
+		this.MAX_OFFSET_Y = canvasHeight/2;
+		this.MAX_OFFSET_X = canvasWidth/2;
+		this.MIN_OFFSET_Y = -mapHeight*tileWidth + canvasHeight/2;
+		this.MIN_OFFSET_X = -mapWidth*tileWidth + canvasWidth/2;
 	}
 
 	void setMovingUp(boolean movingUp)
@@ -85,8 +85,8 @@ public class Camera
 			this.offSetX+=Camera.PAN_SPEED;
 		}
 		checkBounds();
-//		System.out.println("OffsetY: " + this.offSetY +
-//							", OffsetX: " + this.offSetX);
+		System.out.println("OffsetY: " + this.offSetY +
+							", OffsetX: " + this.offSetX);
 	}
 
 	/* Checks camera movement bounds. Offset should allow at most half the screen to be off-map */

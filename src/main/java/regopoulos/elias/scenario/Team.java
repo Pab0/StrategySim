@@ -2,10 +2,12 @@ package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
 import javafx.scene.paint.Color;
+import regopoulos.elias.scenario.pathfinding.Pathfinder;
 import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 
 public class Team implements MapViewTeam
 {
@@ -15,14 +17,18 @@ public class Team implements MapViewTeam
 
 	private Color color;
 	private boolean[][] visibleMap;		//mask of visible portion of scenario's map
+	Pathfinder pathfinder;	//each team has its own Pathfinder object
+	private List<Dimension2D> dropOffSites;
 	private Agent[] agents;
 	private int teamID;
+	private TerrainType terrainType;	//used to denote the team's dropOffSites on the map
 	private EnumMap<TerrainType,Resource> resources;
 	private boolean finishedGathering;
 
 	public Team(TerrainType terrainType)
 	{
 		this.teamID = Character.getNumericValue(terrainType.glyph);
+		this.terrainType = terrainType;
 		this.color = Color.hsb((HUE_DISTANCE*teamID)%256,SATURATION,BRIGHTNESS);
 	}
 
@@ -37,9 +43,37 @@ public class Team implements MapViewTeam
 		this.visibleMap = new boolean[(int)mapDim.getHeight()][(int)mapDim.getWidth()];
 	}
 
-	public void getDropOffSites()
+	public void setPathfinder()
 	{
-		//TODO return only this team's dropOffSites from Map
+		this.pathfinder = new Pathfinder(this);
+	}
+
+	public Pathfinder getPathfinder()
+	{
+		return pathfinder;
+	}
+
+	/* Sets this team's dropOffSites from Map */
+	public void setDropOffSites()
+	{
+		Map map = Simulation.sim.getScenario().getMap();
+		this.dropOffSites = new ArrayList<Dimension2D>();
+		for (int i=0; i<map.getHeight(); i++)
+		{
+			for (int j=0; j<map.getWidth(); j++)
+			{
+				if (map.getTileMap()[i][j].getTerrainType()==this.terrainType)
+				{
+					this.dropOffSites.add(new Dimension2D(j,i));
+				}
+			}
+		}
+	}
+
+
+	public List<Dimension2D> getDropOffSites()
+	{
+		return this.dropOffSites;
 	}
 
 	public void setAgents(EnumMap<AgentType, Integer> agentNum)
@@ -50,11 +84,15 @@ public class Team implements MapViewTeam
 			for (int i=0; i<agentNum.get(type); i++)
 			{
 				Agent agent = new Agent(type, this, i);
-				agent.initPosition(Simulation.sim.getScenario().getMap());
 				agentList.add(agent);
 			}
 		}
 		this.agents = agentList.toArray(new Agent[agentList.size()]);
+		//set to initial positions
+		for (Agent agent : agents)
+		{
+			agent.initPosition();
+		}
 	}
 
 	public Agent[] getAgents()
@@ -89,7 +127,7 @@ public class Team implements MapViewTeam
 	}
 
 	/* Returns tile as seen by team, aka true tile or unknown */
-	protected Tile getTeamTile(int y, int x)
+	public Tile getTeamTile(int y, int x)
 	{
 		Tile tile = new Tile(TerrainType.UNKNOWN);
 		if (this.visibleMap[y][x])

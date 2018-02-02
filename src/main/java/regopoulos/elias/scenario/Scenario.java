@@ -80,6 +80,8 @@ public class Scenario
 
 	public void initTeams()
 	{
+		setPathfinders();
+		setDropOffSites();
 		setAgents();
 		setVisibleMaps();
 		setResources();
@@ -103,12 +105,19 @@ public class Scenario
 		}
 	}
 
+	private void setPathfinders()
+	{
+		for (Team team : teams)
+		{
+			team.setPathfinder();
+		}
+	}
+
 	private void setDropOffSites()
 	{
-		//TODO, or call somewhere else
 		for (Team team : this.teams)
 		{
-
+			team.setDropOffSites();
 		}
 	}
 
@@ -185,10 +194,15 @@ public class Scenario
 			}
 			for (Agent agent : team.getAgents())
 			{
-				if (agent.pos.getHeight()==y &&
+				if (agent.pos==null)
+				{
+					agentAtPos = null;	//position has not been initialized yet, or agent is dead
+				}
+				else if (agent.pos.getHeight()==y &&
 						agent.pos.getWidth()==x)
 				{
 					agentAtPos = agent;
+					return agentAtPos;
 				}
 			}
 		}

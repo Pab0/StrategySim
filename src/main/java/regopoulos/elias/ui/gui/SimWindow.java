@@ -61,9 +61,9 @@ public class SimWindow extends Application implements SimulationUI
 		renderer.render(true);
 
 		Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-		scene.setOnKeyTyped( (event) -> inputHandler.keyTyped(event));
-		scene.setOnKeyPressed( (event) -> inputHandler.keyPressed(event));
-		scene.setOnKeyReleased( (event) -> inputHandler.keyReleased(event));
+		scene.setOnKeyTyped(inputHandler::keyTyped);
+		scene.setOnKeyPressed(inputHandler::keyPressed);
+		scene.setOnKeyReleased(inputHandler::keyReleased);
 		primaryStage.setScene(scene);
 		canvas.requestFocus();
 		primaryStage.show();
@@ -111,6 +111,12 @@ public class SimWindow extends Application implements SimulationUI
 		this.menuBar.initOnSimLoad();
 
 		simLoop.start();
+	}
+
+	@Override
+	public void log(String string)
+	{
+		this.logBar.log(string);
 	}
 
 	@Override

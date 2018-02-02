@@ -1,6 +1,7 @@
 package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
+import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
 public class Agent
@@ -38,9 +39,15 @@ public class Agent
 		//Nothing left to do here; this agent does not care about worldly attributes.
 	}
 
+	public AgentType getType()
+	{
+		return type;
+	}
+
 	void setPos(int y, int x)
 	{
 		this.pos = new Dimension2D(x,y);
+		System.out.println("Set " + this + " to tile " + pos);
 	}
 
 	public void dropOffResource()
@@ -57,54 +64,15 @@ public class Agent
 		this.resouceCarrying = type;
 	}
 
-	void initPosition(Map map)
+	void initPosition()
 	{
-		Dimension2D dimension2D = getInitPosition(map);
+		Dimension2D dimension2D = getInitPosition();
 		setPos((int)dimension2D.getHeight(), (int)dimension2D.getWidth());
 	}
 
-	private Dimension2D getInitPosition(Map map)
+	private Dimension2D getInitPosition()
 	{
-		Dimension2D initialPosition = null;
-		//Scanning rectangles gradually increasing in size until free tile is found
-		for (int distance=1; distance<Math.min(map.getHeight(),map.getWidth()); distance++)
-		{
-			for (DropOffSite dropOffSite : map.getDropOffSites(this.lnkTeam))
-			{
-				Dimension2D dropOffSiteLoc = dropOffSite.getPosition();
-				int y = (int)dropOffSiteLoc.getHeight();
-				int x = (int)dropOffSiteLoc.getWidth();
-				for (int i=-distance; i<distance+1; i++)
-				{
-					//Top
-					if (this.canMoveTo(y-distance,x+i, true))
-					{
-						initialPosition = new Dimension2D(x+i,y-distance);
-					}
-					//Bottom
-					else if (this.canMoveTo(y+distance,x+i,true))
-					{
-						initialPosition = new Dimension2D(x+i, y+distance);
-					}
-					//Left
-					else if (this.canMoveTo(y+i,x-distance,true))
-					{
-						initialPosition = new Dimension2D(x-distance,y+i);
-					}
-					//Right
-					else if (this.canMoveTo(y+i,x+distance,true))
-					{
-						initialPosition = new Dimension2D(x+distance,y+i);
-					}
-					if (initialPosition!=null)
-					{
-						return initialPosition;
-					}
-				}
-			}
-		}
-		System.out.println("Nothing found");
-		return null;	//No place found, may need to handle that more gracefully
+		return lnkTeam.getPathfinder().findNearestEmptyTile();
 	}
 
 	private boolean canMoveTo(Dimension2D dimension2D)
@@ -117,36 +85,10 @@ public class Agent
 	private boolean canMoveTo(int y, int x, boolean ignoreVisibility)
 	{
 		Map realMap = Simulation.sim.getScenario().getMap();
-		return locationIsInBounds(y,x,realMap) &&
-				locationIsTraversable(y,x,realMap,ignoreVisibility) &&
-				locationIsNotOccupied(y,x);
+		return TileChecker.locationIsInBounds(y,x) &&
+				TileChecker.locationIsTraversable(y,x,lnkTeam,ignoreVisibility) &&
+				TileChecker.locationIsNotOccupied(y,x);
 	}
-	/* Check if location is within bounds of map */
-	private boolean locationIsInBounds(int y, int x, Map realMap)
-	{
-		boolean inBounds = (x>=0 &&
-				x<realMap.getWidth() &&
-				y>=0 &&
-				y<realMap.getHeight());
-		return inBounds;
-	}
-
-	/* Check if location is traversable */
-	private boolean locationIsTraversable(int y, int x, Map realMap, boolean ignoreVisibility)
-	{
-		boolean traversable = ignoreVisibility ?
-				realMap.getTileMap()[y][x].getTerrainType().traversable :
-				lnkTeam.getTeamTile(y,x).getTerrainType().traversable;
-		return traversable;
-	}
-
-	/* Check if location is not already occupied */
-	private boolean locationIsNotOccupied(int y, int x)
-	{
-		boolean notOccupied = Simulation.sim.getScenario().getAgentAtPos(new Dimension2D(y,x))==null;
-		return notOccupied;
-	}
-
 
 	/* Default behaviour is to respect map visibility; only ignore it on setup for initial positions */
 	private boolean canMoveTo(int x, int y)

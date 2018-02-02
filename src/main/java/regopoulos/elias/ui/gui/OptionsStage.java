@@ -1,8 +1,5 @@
 package regopoulos.elias.ui.gui;
 
-import com.sun.org.apache.regexp.internal.RE;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -22,7 +19,6 @@ import regopoulos.elias.scenario.*;
 import regopoulos.elias.sim.Simulation;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.EnumMap;
 
 

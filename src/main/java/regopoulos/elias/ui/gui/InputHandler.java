@@ -6,10 +6,10 @@ import regopoulos.elias.sim.Simulation;
 
 public class InputHandler
 {
-	private static final KeyCode MOVE_CAM_UP 	= KeyCode.W;
-	private static final KeyCode MOVE_CAM_DOWN 	= KeyCode.S;
-	private static final KeyCode MOVE_CAM_LEFT 	= KeyCode.A;
-	private static final KeyCode MOVE_CAM_RIGHT	= KeyCode.D;
+	private static final KeyCode MOVE_UP 	= KeyCode.S;
+	private static final KeyCode MOVE_DOWN 	= KeyCode.W;
+	private static final KeyCode MOVE_LEFT 	= KeyCode.D;
+	private static final KeyCode MOVE_RIGHT	= KeyCode.A;
 
 	private LogOutput logOutput;
 
@@ -46,19 +46,19 @@ public class InputHandler
 		}
 		SimWindow sw = (SimWindow)Simulation.sim.getSimUI();
 		Camera camera = sw.getCamera();
-		if (keyCode==MOVE_CAM_UP)
+		if (keyCode==MOVE_UP)
 		{
 			camera.setMovingUp(pressed);
 		}
-		if (keyCode==MOVE_CAM_DOWN)
+		if (keyCode==MOVE_DOWN)
 		{
 			camera.setMovingDown(pressed);
 		}
-		if (keyCode==MOVE_CAM_LEFT)
+		if (keyCode==MOVE_LEFT)
 		{
 			camera.setMovingLeft(pressed);
 		}
-		if (keyCode==MOVE_CAM_RIGHT)
+		if (keyCode==MOVE_RIGHT)
 		{
 			camera.setMovingRight(pressed);
 		}
