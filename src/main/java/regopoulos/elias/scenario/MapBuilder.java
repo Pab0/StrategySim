@@ -42,7 +42,7 @@ class MapBuilder
 		return map;
 	}
 
-	/* Fills Tile[] according to char[] line. */
+	/**Fills Tile[] according to char[] line. */
 	private static Tile[] fillLine(String line, int maxWidth)
 	{
 		Tile[] tileLine = new Tile[maxWidth];

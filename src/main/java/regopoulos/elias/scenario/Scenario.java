@@ -1,10 +1,13 @@
 package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
-import regopoulos.elias.sim.Simulation;
+import regopoulos.elias.scenario.ai.SpringAI;
+import regopoulos.elias.scenario.ai.SummerAI;
+import regopoulos.elias.scenario.pathfinding.Pathfinder;
 
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 
 public class Scenario
 {
@@ -15,14 +18,23 @@ public class Scenario
 	public static final int DEFAULT_VILLAGER_COUNT = 5;
 
 	private Map map;
+	private Pathfinder pathfinder;
 	private Team[] teams;
 	private GaiaTeam gaia;
 	private EnumMap<TerrainType, Integer> resourceGoals;
 	private EnumMap<AgentType, Integer> agentNum;
+	private HashMap<Dimension2D, Agent> agentPos;	//keeps a record of all positions occupied by an agent
+	// TODO update this whenever an Agent moves
 
 	public Scenario()
 	{
 		this.gaia = new GaiaTeam();	//Gaia is omnipresent
+		this.agentPos = new HashMap<Dimension2D, Agent>();
+	}
+
+	public HashMap<Dimension2D, Agent> getPositionsWithAgents()
+	{
+		return agentPos;
 	}
 
 	public void setMap(Map map)
@@ -35,6 +47,16 @@ public class Scenario
 		return map;
 	}
 
+	public void setPathfinder()
+	{
+		this.pathfinder = new Pathfinder();
+	}
+
+	public Pathfinder getPathfinder()
+	{
+		return pathfinder;
+	}
+
 	public void setTeams(Team[] teams)
 	{
 		this.teams = teams;
@@ -45,12 +67,12 @@ public class Scenario
 		return teams;
 	}
 
-	Team getTeamByID(int ID)
+	private Team getTeamByID(int ID)
 	{
 		return Arrays.stream(this.teams).filter(team -> team.getTeamID()==ID).findAny().get();
 	}
 
-	/* Convenience method for getTeamByID(int) */
+	/**Convenience method for getTeamByID(int) */
 	Team getTeamByID(TerrainType type)
 	{
 		return getTeamByID(Character.getNumericValue(type.glyph));
@@ -78,20 +100,30 @@ public class Scenario
 		System.out.println(this.agentNum);
 	}
 
-	public void initTeams()
+	public void initTeams() throws NotEnoughTilesFoundException
 	{
-		setPathfinders();
+		setPlanners();
 		setDropOffSites();
-		setAgents();
 		setVisibleMaps();
+		setAgents();
 		setResources();
 	}
 
-	private void setAgents()
+	private void setPlanners()
+	{
+		for (Team team : teams)
+		{
+			//TODO set correct planner for each team
+			team.setPlanner(new SummerAI(team, 0.1));	//TODO set aggressiveness back to ~0.5
+		}
+	}
+
+	private void setAgents() throws NotEnoughTilesFoundException
 	{
 		for (Team team : teams)
 		{
 			team.setAgents(agentNum);
+			System.out.println("Set agents of " + team);
 		}
 	}
 
@@ -102,14 +134,6 @@ public class Scenario
 		for (Team team : this.teams)
 		{
 			team.setVisibleMap(mapDimension);
-		}
-	}
-
-	private void setPathfinders()
-	{
-		for (Team team : teams)
-		{
-			team.setPathfinder();
 		}
 	}
 
@@ -129,7 +153,7 @@ public class Scenario
 		}
 	}
 
-	/* Returns next team from scenario.
+	/**Returns next team from scenario.
 	 * If curTeam is null, return the first eligible team.
  	 * Returns null if there's no other team.
  	 */
@@ -172,40 +196,21 @@ public class Scenario
 		return winner;
 	}
 
-	/* We have to choose between storing either the position of each agent
+	/**We have to choose between storing either the position of each agent
 	 * or the agents in each tile, in order to have a Single Source of Truth.
 	 * Seeing as agents<<tiles in every scenario, the former is computationally cheaper,
-	 * and we can loop through the agents whenever we need the latter.
+	 * and we can instantly look the latter up on our HashMap.
 	 */
 	public Agent getAgentAtPos(Dimension2D position)
 	{
-		return getAgentAtPos((int)position.getHeight(), (int)position.getWidth());
+		return this.agentPos.get(position);
 	}
 
 
 	public Agent getAgentAtPos(int y, int x)
 	{
-		Agent agentAtPos = null;
-		for (Team team : teams)
-		{
-			if (team.getAgents()==null || team.getAgents()[team.getAgents().length-1]==null)
-			{
-				continue; 	//this team's agents haven't been initialized yet
-			}
-			for (Agent agent : team.getAgents())
-			{
-				if (agent.pos==null)
-				{
-					agentAtPos = null;	//position has not been initialized yet, or agent is dead
-				}
-				else if (agent.pos.getHeight()==y &&
-						agent.pos.getWidth()==x)
-				{
-					agentAtPos = agent;
-					return agentAtPos;
-				}
-			}
-		}
-		return agentAtPos;
+		return getAgentAtPos((new Dimension2D(x,y)));
 	}
+
+
 }

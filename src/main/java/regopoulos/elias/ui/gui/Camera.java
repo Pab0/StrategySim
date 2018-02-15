@@ -1,5 +1,6 @@
 package regopoulos.elias.ui.gui;
 
+import javafx.geometry.Dimension2D;
 import javafx.scene.canvas.Canvas;
 import regopoulos.elias.scenario.Map;
 import regopoulos.elias.sim.Simulation;
@@ -85,16 +86,26 @@ public class Camera
 			this.offSetX+=Camera.PAN_SPEED;
 		}
 		checkBounds();
-		System.out.println("OffsetY: " + this.offSetY +
-							", OffsetX: " + this.offSetX);
 	}
 
-	/* Checks camera movement bounds. Offset should allow at most half the screen to be off-map */
+	/**Checks camera movement bounds. Offset should allow at most half the screen to be off-map */
 	private void checkBounds()
 	{
 		this.offSetY = Math.max(this.offSetY, this.MIN_OFFSET_Y);
 		this.offSetY = Math.min(this.offSetY, this.MAX_OFFSET_Y);
 		this.offSetX = Math.max(this.offSetX, this.MIN_OFFSET_X);
 		this.offSetX = Math.min(this.offSetX, this.MAX_OFFSET_X);
+	}
+
+	/**centers camera over tile at given coordinates */
+	void centerOn(Dimension2D point)
+	{
+		SimWindow sw = (SimWindow)Simulation.sim.getSimUI();
+		int canvasHeight = (int)sw.getRenderer().mapTileCapacity.getY();
+		int canvasWidth = (int)sw.getRenderer().mapTileCapacity.getX();
+		this.offSetY = (int)(canvasHeight/2 - point.getHeight())*Renderer.TILE_WIDTH;
+		this.offSetX = (int)(canvasWidth/2 - point.getWidth())*Renderer.TILE_WIDTH;
+		checkBounds();
+		System.out.println("Centering on " + this.offSetY + ", " + this.offSetX);
 	}
 }

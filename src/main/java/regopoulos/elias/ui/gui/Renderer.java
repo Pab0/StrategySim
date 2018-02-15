@@ -4,9 +4,11 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Map;
 import regopoulos.elias.scenario.Team;
+import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
 
@@ -15,7 +17,7 @@ public class Renderer
 {
 	static final short TILE_WIDTH = 20;
 
-	private Point2D mapTileCapacity;	//how many tiles fit onto the canvas
+	public Point2D mapTileCapacity;	//how many tiles fit onto the canvas
 	private Point2D tileOffset;			//how many tiles one should shift
 	private Point2D subTileOffset;		//how much tiles are shifted
 
@@ -33,23 +35,27 @@ public class Renderer
 
 	public void render()
 	{
-		//TODO
 		gc.setFill(Color.DARKGREY);
 		gc.fillRect(0,0,gc.getCanvas().getWidth(),gc.getCanvas().getHeight());
 		calcRenderOffset();
 		renderTiles();
 		renderGrid();
 		renderAgents();
+		renderSelectedAgent();
 	}
 
 	private void renderAgents()
 	{
-		//TODO
 		for (Team team : Simulation.sim.getScenario().getTeams())
 		{
 			for (Agent agent : team.getAgents())
 			{
-				renderMapItem(agent.getType().getIcon(), (int)agent.pos.getHeight(), (int)agent.pos.getWidth());
+				int y = (int)agent.pos.getHeight();
+				int x = (int)agent.pos.getWidth();
+				if (TileChecker.isVisibleTile(y,x))
+				{
+					renderMapItem(agent.getType().getIcon(), y,x);
+				}
 			}
 		}
 	}
@@ -82,7 +88,7 @@ public class Renderer
 				lnkMap.getWidth()*TILE_WIDTH+camera.getOffSetX(), lnkMap.getHeight()*TILE_WIDTH+camera.getOffSetY());
 	}
 
-	/* Based on the camera's offset, calculates
+	/**Based on the camera's offset, calculates
 	 * a) The tiles to be rendered.
 	 * b) The sub-tile shift.
 	 */
@@ -96,10 +102,10 @@ public class Renderer
 		this.subTileOffset = new Point2D(camOffsetX%TILE_WIDTH,
 											camOffsetY%TILE_WIDTH);
 
-		log("tileOffset: " + tileOffset + ", subTileOffset: " + subTileOffset);
+//		log("tileOffset: " + tileOffset + ", subTileOffset: " + subTileOffset);
 	}
 
-	/* Only render tiles visible on canvas	 */
+	/**Only render tiles visible on canvas	 */
 	private void renderTiles()
 	{
 		Map lnkMap = Simulation.sim.getScenario().getMap();
@@ -111,27 +117,38 @@ public class Renderer
 				(int)Math.min(-tileOffset.getX()+mapTileCapacity.getX()+2,lnkMap.getWidth()),
 				(int)Math.min(-tileOffset.getY()+mapTileCapacity.getY()+2,lnkMap.getHeight()));
 
-//		log("Rendering from " + upperLeftTile + " to " + lowerRightTile);
-
 		for (int i=(int)upperLeftTile.getY(); i<lowerRightTile.getY(); i++)
 		{
 			for (int j=(int)upperLeftTile.getX(); j<lowerRightTile.getX(); j++)
 			{
-				renderMapItem(lnkMap.getTileMap()[i][j].getTerrainType().getIcon(), i, j);
+				renderMapItem(TileChecker.currentlyVisibleTerrain(i,j).getIcon(),i,j);
 			}
 		}
 	}
 
-	/* Renders item with position y,x on map.
+	/**Renders a circle around currently selected Agent */
+	private void renderSelectedAgent()
+	{
+		Agent selAgent = Simulation.sim.getSimUI().getSelectedAgent();
+		if (selAgent.getType()!=null)	//Gaia's agent is intangible
+		{
+			int y = (int)selAgent.pos.getHeight();
+			int x = (int)selAgent.pos.getWidth();
+			gc.strokeOval(
+					(x+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
+					(y+tileOffset.getY())*TILE_WIDTH + subTileOffset.getY(),
+					TILE_WIDTH,TILE_WIDTH);
+		}
+	}
+
+	/**Renders item with position y,x on map.
 	 * Automatically shifts render position according to camera offset.
 	 */
 	private void renderMapItem(Image image, int y, int x)
 	{
 		gc.drawImage(image,
 				(x+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
-//				(x)*TILE_WIDTH + subTileOffset.getX(),
 				(y+tileOffset.getY())*TILE_WIDTH + subTileOffset.getY(),
-//				(y)*TILE_WIDTH + subTileOffset.getY(),
 				TILE_WIDTH,TILE_WIDTH);
 	}
 

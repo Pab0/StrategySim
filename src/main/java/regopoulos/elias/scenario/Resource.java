@@ -32,4 +32,12 @@ public class Resource
 	{
 		return type;
 	}
+
+	/**Agent drops off resource at team's dropOffSite.
+	 * Adds +1 to the resource's count.
+	 */
+	public void dropOff()
+	{
+		this.current++;
+	}
 }

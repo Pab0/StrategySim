@@ -1,8 +1,15 @@
 package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
+import regopoulos.elias.scenario.ai.Action;
+import regopoulos.elias.scenario.ai.ActionType;
+import regopoulos.elias.scenario.ai.BadVisibilityException;
+import regopoulos.elias.scenario.pathfinding.Node;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Agent
 {
@@ -13,11 +20,12 @@ public class Agent
 	private TerrainType resouceCarrying;
 	private boolean carriesResource;
 	private int HP;
-	private double speed;
 	private int attack, defense;
 	private double stepsToMake;		//accumulating steps according to speed
 
 	public Dimension2D pos;	//agent's current position
+	private ArrayList<Action> possibleActions;	//list of actions to be examined, one of which will be chosen.
+	private Action action;	//action to be carried out by agent
 
 	Agent(AgentType type, Team lnkTeam, int typeID)
 	{
@@ -26,13 +34,12 @@ public class Agent
 		this.typeID = typeID;
 		this.name = this.type + " #" + this.typeID;
 		this.HP = this.type.maxHP;
-		this.speed = this.type.speed;
 		this.attack = this.type.attack;
 		this.defense = this.type.defense;
 		this.carriesResource = false;
 	}
 
-	/* God agent, reserved for none other than Gaia itself */
+	/**God agent, reserved for none other than Gaia itself */
 	Agent(boolean isGaia)
 	{
 		this.name = "Agent of Gaia";
@@ -46,54 +53,121 @@ public class Agent
 
 	void setPos(int y, int x)
 	{
+		Simulation.sim.getScenario().getPositionsWithAgents().remove(pos);
 		this.pos = new Dimension2D(x,y);
+		Simulation.sim.getScenario().getPositionsWithAgents().put(pos, this);
+		try
+		{
+			lookAround();
+		}
+		catch (ArrayIndexOutOfBoundsException e)
+		{
+			//agent died, has gone to [-1,-1]
+		}
 		System.out.println("Set " + this + " to tile " + pos);
+	}
+
+	void setPos(Dimension2D dim)
+	{
+		this.setPos((int)dim.getHeight(), (int)dim.getWidth());
+	}
+
+	public Team getTeam()
+	{
+		return lnkTeam;
+	}
+
+	public void setPossibleActions(ArrayList<Action> possibleActions)
+	{
+		this.possibleActions = possibleActions;
+	}
+
+	public ArrayList<Action> getPossibleActions()
+	{
+		return possibleActions;
+	}
+
+	public Action getAction()
+	{
+		return action;
+	}
+
+	/**Adds neighbouring tiles to team's visible map */
+	private void lookAround()
+	{
+		List<Dimension2D> neighbours = TileChecker.getNeighbours(this.pos);
+		for (Dimension2D dim : neighbours)
+		{
+			try
+			{
+				lnkTeam.getVisibleMap()[(int)dim.getHeight()][(int)dim.getWidth()] = true;
+			}
+			catch (Exception e)
+			{
+				System.out.println("Oopsie daisy");
+			}
+		}
+		//sanity check, also used when setting the initial position
+		lnkTeam.getVisibleMap()[(int)pos.getHeight()][(int)pos.getWidth()] = true;
+	}
+
+	private void moveOrDo() throws BadVisibilityException
+	{
+		if (action==null)	//No Zugzwang
+		{
+			return;
+		}
+		if (this.action.getPath().size()>1)
+		{
+			move();
+		}
+		else if (this.action.getPath().size()==1)
+		{
+			doAction();
+		}
+	}
+
+	private void move()
+	{
+		ArrayList<Dimension2D> path = this.action.getPath();
+		setPos(path.get(0));
+		this.action.getPath().remove(0);
+		System.out.println("Moved to " + this.pos);
+	}
+
+	private void doAction() throws BadVisibilityException
+	{
+		this.action.doAction(this);
+		System.out.println("Did " + this.action);
+	}
+
+	public boolean isCarryingResource()
+	{
+		return this.carriesResource;
+	}
+
+	public void attack(Agent enemyAgent)
+	{
+		double damage = Math.max(0, this.attack-enemyAgent.defense);	//compiler denied me the golden opportunity of writing `double damage *=2`
+		enemyAgent.HP -= damage;
+		if (!enemyAgent.isAlive())
+		{
+			enemyAgent.die();
+		}
 	}
 
 	public void dropOffResource()
 	{
-		//TODO check if eligible, maybe do check elsewhere? -> Well, duh - make an Action class
+		this.lnkTeam.getResources().get(this.resouceCarrying).dropOff();
 		this.carriesResource = false;
 		this.resouceCarrying = null;
 	}
 
-	public void gatherResource(TerrainType type)
+	public void gatherResource(Tile lnkTile)
 	{
-		//TODO check if resource, etc.
+		this.resouceCarrying = lnkTile.getTerrainType();
 		this.carriesResource = true;
-		this.resouceCarrying = type;
-	}
-
-	void initPosition()
-	{
-		Dimension2D dimension2D = getInitPosition();
-		setPos((int)dimension2D.getHeight(), (int)dimension2D.getWidth());
-	}
-
-	private Dimension2D getInitPosition()
-	{
-		return lnkTeam.getPathfinder().findNearestEmptyTile();
-	}
-
-	private boolean canMoveTo(Dimension2D dimension2D)
-	{
-		int y = (int)dimension2D.getHeight();
-		int x = (int)dimension2D.getWidth();
-		return canMoveTo(y,x);
-	}
-
-	private boolean canMoveTo(int y, int x, boolean ignoreVisibility)
-	{
-		Map realMap = Simulation.sim.getScenario().getMap();
-		return TileChecker.locationIsInBounds(y,x) &&
-				TileChecker.locationIsTraversable(y,x,lnkTeam,ignoreVisibility) &&
-				TileChecker.locationIsNotOccupied(y,x);
-	}
-
-	/* Default behaviour is to respect map visibility; only ignore it on setup for initial positions */
-	private boolean canMoveTo(int x, int y)
-	{
-		return canMoveTo(x,y,false);
+		lnkTile.gatherResource();
 	}
 
 	public boolean isAlive()
@@ -101,9 +175,24 @@ public class Agent
 		return this.HP>0;
 	}
 
-	public void update()
+	private void die()	//the "void" type feels oddly fitting for this mortal function
 	{
-		//TODO
+		this.HP = 0;
+		this.setPos(-1,-1);
+		Simulation.sim.getScenario().getPositionsWithAgents().remove(pos);
+		this.lnkTeam.getAgents().remove(this);
+		System.out.println("Requiescat in pace, " + this);
+	}
+
+	public void update() throws BadVisibilityException
+	{
+		lookAround();
+		//Plan new Action
+		this.action = lnkTeam.getPlanner().getNextAction(this);
+		System.out.println(this + " chose action " + action);
+		//Ask Pathfinder for closest adjacent goal, and path towards it
+		//move on path, or carry out action (can't do both in same round)
+		moveOrDo();
 	}
 
 	public String toString()

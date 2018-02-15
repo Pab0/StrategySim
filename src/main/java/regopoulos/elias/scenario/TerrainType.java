@@ -49,6 +49,11 @@ public enum TerrainType
 		this.isDropOffSite = Character.isDigit(this.glyph);
 	}
 
+	public boolean isResource()
+	{
+		return isResource;
+	}
+
 	public Image getIcon()
 	{
 		return icon;

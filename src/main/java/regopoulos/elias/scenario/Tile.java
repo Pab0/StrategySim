@@ -12,12 +12,21 @@ public class Tile
 	}
 
 	//If resource is depleted, set terrainType to grass
-	protected void checkTerrain()
+	private void checkTerrain()
 	{
 		if (resourceLeft==0)
 		{
 			this.terrainType = TerrainType.GRASS;
 		}
+	}
+
+	/**Somebody gathers the resource of the tile.
+	 * Decreases the resource left by 1.
+	 */
+	public void gatherResource()
+	{
+		this.resourceLeft--;
+		checkTerrain();
 	}
 
 	public TerrainType getTerrainType()

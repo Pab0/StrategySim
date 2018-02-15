@@ -1,79 +1,146 @@
 package regopoulos.elias.scenario.pathfinding;
 
-import javafx.geometry.Dimension2D;
+import regopoulos.elias.scenario.Agent;
+import regopoulos.elias.scenario.NotEnoughTilesFoundException;
 import regopoulos.elias.scenario.Team;
+import regopoulos.elias.scenario.TerrainType;
+import regopoulos.elias.scenario.ai.Action;
+import regopoulos.elias.sim.Simulation;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/* Main pathfinding class.
- * Implements A* //TODO
+/**Main pathfinding class.
+ * Implements A*. //TODO
+ * Two modi of operation:
+ * a) Finds path from A to B
+ * b) Sweeps area from point A until XYZ objects are found, as indicated in the PathfinderGoals object.
+ * [b] is done so that all objects can be found in a single sweep.
  */
 public class Pathfinder
 {
-	public static final Dimension2D NO_TILE_FOUND = new Dimension2D(-1,-1);	//used for returning values when nothing has been found
+	private static final int MAX_CLOSED_SET = 1_000;	//max size of closed set, before giving up searching for goals
 
-	Team lnkTeam;
-	List<Dimension2D> closedSet, openSet;
+	List<Node> closedSet, openSet;
+	private PathfinderGoals goals;
 
-	public Pathfinder(Team lnkTeam)
+	public Pathfinder()
 	{
-		this.lnkTeam = lnkTeam;
-		this.closedSet = new ArrayList<Dimension2D>();
-		this.openSet = new ArrayList<Dimension2D>();
+		this.closedSet = new ArrayList<Node>();
+		this.openSet = new ArrayList<Node>();
+		this.goals = new PathfinderGoals();
 	}
 
-	//Returns all traversible neighbours of tile @ y,x not already in closedSet
-	public ArrayList<Dimension2D> getTraversibleNeighbours(int y, int x, boolean ignoreVisibility)
+	public void setPathfinderGoals(PathfinderGoals pathfinderGoals)
 	{
-		ArrayList<Dimension2D> neighbours = TileChecker.getNeighbours(y,x);
-		neighbours = neighbours.stream().
-				filter(TileChecker::locationIsInBounds).
-				filter(nb -> TileChecker.locationIsTraversable(nb,lnkTeam,ignoreVisibility)).
-//				filter(TileChecker::locationIsNotOccupied).
-				filter(nb -> !closedSet.contains(nb)).
-				collect(Collectors.toCollection(ArrayList::new));
-		return neighbours;
-	}
-	//convenience method
-	private ArrayList<Dimension2D> getTraversibleNeighbours(Dimension2D dim, boolean ignoreVisibility)
-	{
-		return getTraversibleNeighbours((int)dim.getHeight(), (int)dim.getWidth(), ignoreVisibility);
+		this.goals = pathfinderGoals;
 	}
 
-	/* Only used for setting agent's initial position */
-	public Dimension2D findNearestEmptyTile()
+	/**Returns all possible Actions for this agent
+	 *
+	 * @param lnkAgent
+	 * @return
+	 */
+	public PathfinderGoals getPossibleActions(PathfinderGoals pathfinderGoals, Agent lnkAgent)
 	{
-		Dimension2D pos = Pathfinder.NO_TILE_FOUND;
 		this.closedSet.clear();
 		this.openSet.clear();
-		this.openSet.addAll(lnkTeam.getDropOffSites());
-		while (pos==Pathfinder.NO_TILE_FOUND)
+		this.setPathfinderGoals(pathfinderGoals);
+		Node rootNode = new Node(lnkAgent.pos);
+		this.openSet.add(rootNode);	//adding agent's current position to openSet
+		try
 		{
-			pos = openSet.stream().
-					filter(TileChecker::locationIsInBounds).
-					filter(dim -> TileChecker.locationIsTraversable(dim, lnkTeam, true)).
-					filter(TileChecker::locationIsNotOccupied).
-					filter(dim -> !closedSet.contains(dim)).
-					findAny().orElse(Pathfinder.NO_TILE_FOUND);
-
-			//If whole openSet is already occupied, set openSet to empty neighbours
-			do
-			{
-				ArrayList<Dimension2D> newOpenSet = new ArrayList<Dimension2D>();
-				for (Dimension2D closedDim : openSet)
-				{
-					newOpenSet.addAll(getTraversibleNeighbours(closedDim,true));
-				}
-				closedSet.addAll(openSet);
-				openSet.clear();
-				openSet = newOpenSet;
-			}while (!openSet.stream().
-					filter(TileChecker::locationIsNotOccupied).findAny().isPresent());
+			sweepForGoals(lnkAgent.getTeam());
 		}
-		openSet.clear();
-		closedSet.clear();
-		return pos;
+		catch (NotEnoughTilesFoundException e)
+		{
+//			System.out.println("Not enough tiles found");
+		}
+		return this.goals;
 	}
 
+	/** Only used for setting agen't initial position
+	 * @param lnkTeam - the team whose agents are being set
+	 * @param amount - number of agents
+	 * @return non-occupied Grass tiles closest to lnkTeam's DropOffSites
+	 */
+	public ArrayList<Action> findNearestEmptyTiles(Team lnkTeam, int amount) throws NotEnoughTilesFoundException
+	{
+		this.closedSet.clear();
+		this.openSet.clear();
+		this.openSet.addAll(lnkTeam.getDropOffSites().	//Setting openSet to team's dropOffsites
+				stream().map(Node::new).collect(Collectors.toList()));
+		PathfinderGoals pfg = new PathfinderGoals();
+		pfg.addObjectsToFind(TerrainType.GRASS, amount);
+		setPathfinderGoals(pfg);
+		sweepForGoals(Simulation.sim.getScenario().getGaia().getVisibleMap(), lnkTeam, true);
+		return this.goals.getObjectsFound().get(TerrainType.GRASS);
+	}
+
+	/**Find goals, as set by PathfinderGoals.
+	 * Populates PathfinderGoals with locations (which are then turned into Actions).
+	 * @param visibleMap passes the team's visibilityMap which should be used while scanning.
+	 *                   Pass Gaia's map for full visibility (such as when initiating positions).
+	 * @param lnkTeam	Used for telling apart friend and foe.
+	 * @param ignoreOccupants Whether the sweep should treat occupied tiles as obstacles everywhere,
+	 *                         or only in the final destination (ignoring path-blocking agents).
+	 *                        Used for setting the initial positions.
+	 * @return
+	 */
+	private void sweepForGoals(boolean[][] visibleMap, Team lnkTeam, boolean ignoreOccupants) throws NotEnoughTilesFoundException
+	{
+		this.openSet.addAll(openSet.get(0).getNeighbours());
+		while (!this.goals.isFinished())
+		{
+			if (openSet.isEmpty())	//no tiles on map
+			{
+				throw new NotEnoughTilesFoundException();
+			}
+			if (closedSet.size()>MAX_CLOSED_SET) //no tiles (relatively) nearby
+			{
+				throw new NotEnoughTilesFoundException();
+			}
+
+			//Checking tiles
+			for (Node node : openSet)
+			{
+				this.goals.checkIfGoal(node, lnkTeam, visibleMap);
+				if (this.goals.isFinished())	//only loop as long as there are unsatisfied goals
+				{
+					break;
+				}
+			}
+
+			//Adding elligible neighbouring tiles for next sweep
+			ArrayList<Node> neighbours = new ArrayList<Node>();	//basically the (superset of the) new openSet
+			closedSet.addAll(openSet);
+			openSet = openSet.stream().
+					filter(node -> NodeChecker.nodeIsTraversable(node, visibleMap)).
+					collect(Collectors.toList());
+			if (!ignoreOccupants)
+			{
+				openSet.removeIf(node -> !NodeChecker.isNotOccupied(node, visibleMap));
+			}
+			for (Node node : openSet)
+			{
+				neighbours.addAll(node.getNeighbours());
+			}
+
+			openSet.clear();
+			openSet = neighbours.stream().
+					distinct().
+					filter(node -> !closedSet.contains(node)).
+					collect(Collectors.toList());
+		}
+	}
+
+	/**Convenience method.
+	 * Default is to not ignore occupied tiles (they're only ignored when setting initial positions).
+	 * @param lnkTeam	Gives team to determine own/enemy agents, and provides visibility map.
+	 */
+	private void sweepForGoals(Team lnkTeam) throws NotEnoughTilesFoundException
+	{
+		sweepForGoals(lnkTeam.getVisibleMap(), lnkTeam, false);
+	}
 }

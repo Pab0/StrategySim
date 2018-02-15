@@ -37,7 +37,7 @@ class MapAnalyzer
 		return teamsInMap;
 	}
 
-	/* Scans map's tiles and marks all terrain types it comes across as true */
+	/**Scans map's tiles and marks all terrain types it comes across as true */
 	private static EnumMap<TerrainType, Boolean> scanMap(Map map)
 	{
 		EnumMap<TerrainType, Boolean> resourceContainedInMap = new EnumMap<TerrainType, Boolean>(TerrainType.class);

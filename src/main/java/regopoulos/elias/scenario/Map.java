@@ -1,5 +1,7 @@
 package regopoulos.elias.scenario;
 
+import javafx.geometry.Dimension2D;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,21 @@ public class Map
 		return resourcesInMap;
 	}
 
+	public TerrainType getTerrainAt(Dimension2D dim)
+	{
+		return this.map[(int)dim.getHeight()][(int)dim.getWidth()].getTerrainType();
+	}
+
+	public TerrainType getTerrainAt(int y, int x)
+	{
+		return this.map[y][x].getTerrainType();
+	}
+
+	public Tile getTileAt(Dimension2D dim)
+	{
+		return this.map[(int)dim.getHeight()][(int)dim.getWidth()];
+	}
+
 	public ArrayList<TerrainType> getTeamsInMap()
 	{
 		return teamsInMap;
@@ -46,7 +63,7 @@ public class Map
 		return dropOffSites;
 	}
 
-	/* Gets dropOffSites of team */
+	/**Gets dropOffSites of team */
 	List<DropOffSite> getDropOffSites(Team team)
 	{
 		getDropOffSites();

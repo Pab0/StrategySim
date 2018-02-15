@@ -25,8 +25,6 @@ public class InputHandler
 
 	void keyPressed(KeyEvent event)
 	{
-		System.out.println("Key pressed: " + event.getCode());
-		System.out.println("Getting keycode: " + KeyCode.getKeyCode(event.getCharacter()));
 		keyPressedReleased(event.getCode(),true);
 	}
 
@@ -35,7 +33,7 @@ public class InputHandler
 		keyPressedReleased(event.getCode(),false);
 	}
 
-	/* Called on key pressed or released, to avoid code duplication.
+	/**Called on key pressed or released, to avoid code duplication.
 	 * The `pressed` boolean determines whether the key has been pressed or released.
 	 */
 	private void keyPressedReleased(KeyCode keyCode, boolean pressed)

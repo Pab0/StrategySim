@@ -2,6 +2,7 @@ package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 
 /*
@@ -11,12 +12,12 @@ public class GaiaTeam implements MapViewTeam
 {
 	private static final String NAME = "Gaia";
 	private boolean[][] visibleMap;
-	private Agent[] agents;
+	private ArrayList<Agent> agents;
 
 	public GaiaTeam()
 	{
-		this.agents = new Agent[1];
-		agents[0] = new Agent(true);
+		this.agents = new ArrayList<Agent>();
+		agents.add(new Agent(true));
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public class GaiaTeam implements MapViewTeam
 	}
 
 	@Override
-	public Agent[] getAgents()
+	public ArrayList<Agent> getAgents()
 	{
 		return agents;
 	}

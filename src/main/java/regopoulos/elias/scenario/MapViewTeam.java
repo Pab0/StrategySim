@@ -2,6 +2,7 @@ package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 
 public interface MapViewTeam
@@ -10,7 +11,7 @@ public interface MapViewTeam
 
 	void setVisibleMap(Dimension2D mapDimension);	//instantiates the visible map
 
-	Agent[] getAgents();
+	ArrayList<Agent> getAgents();
 
 	EnumMap<TerrainType,Resource> getResources();
 

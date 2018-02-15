@@ -102,7 +102,7 @@ public class SimWindow extends Application implements SimulationUI
 	public void initOnSimLoad()
 	{
 		this.selectedTeam = Simulation.sim.getScenario().getTeams()[0];
-		this.selectedAgent = this.selectedTeam.getAgents()[0];
+		this.selectedAgent = this.selectedTeam.getAgents().get(0);
 		this.camera = new Camera(this.canvas);
 		this.renderer.setCamera(camera);
 		SimLoop simLoop = new SimLoop();
@@ -143,6 +143,13 @@ public class SimWindow extends Application implements SimulationUI
 	public void setSelectedAgent(Agent selectedAgent)
 	{
 		this.selectedAgent = selectedAgent;
+		System.out.println("Selected agent: " + this.selectedAgent);
+		if (!selectedTeam.equals(Simulation.sim.getScenario().getGaia()))
+		{
+			camera.centerOn(this.selectedAgent.pos);
+		}
+		this.teamPane.update();
+		this.actionPane.update();
 	}
 
 	private static void loadProperties()
@@ -171,5 +178,11 @@ public class SimWindow extends Application implements SimulationUI
 	public Renderer getRenderer()
 	{
 		return renderer;
+	}
+
+	public void updateChildren()
+	{
+		this.actionPane.update();
+		this.teamPane.update();
 	}
 }

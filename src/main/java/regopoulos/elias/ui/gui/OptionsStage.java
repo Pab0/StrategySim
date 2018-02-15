@@ -144,12 +144,12 @@ public class OptionsStage extends Stage
 		resHBox.setSpacing(10);
 		resHBox.getChildren().add(new Label("Needed Resources:"));
 		ChoiceBox<TerrainType> resView = new ChoiceBox<TerrainType>();
-		resView.setItems(this.resourcesInMap);
-		resHBox.getChildren().add(resView);
 		TextField neededAmount = new TextField();
+		resView.setItems(this.resourcesInMap);
 		resView.getSelectionModel().selectedIndexProperty().addListener(
 				(observable, oldValue, newValue) -> neededAmount.setText(
 				this.resourceGoals.get(resourcesInMap.get(Math.max(newValue.intValue(),0))).toString()));	//max() ensures no ArrayIndex=-1 occurs
+		resHBox.getChildren().add(resView);
 		resHBox.getChildren().add(neededAmount);
 		Button neededResBtn = new Button("Set");
 		neededResBtn.setOnAction(event -> this.resourceGoals.put(resView.getValue(), Math.max(0,Integer.parseInt(neededAmount.getText()))));
@@ -163,11 +163,12 @@ public class OptionsStage extends Stage
 		agentHBox.setSpacing(10);
 		agentHBox.getChildren().add(new Label("Number of Agents for each team:"));
 		ChoiceBox<AgentType> agentsView = new ChoiceBox<AgentType>();
-		agentsView.getItems().setAll(AgentType.values());
-		agentHBox.getChildren().add(agentsView);
 		TextField agentNum = new TextField();
+		agentsView.getItems().setAll(AgentType.values());
 		agentsView.getSelectionModel().selectedIndexProperty().addListener(
 				(observable, oldValue, newValue) -> agentNum.setText(this.agentNum.get(AgentType.values()[newValue.intValue()]).toString()));
+		agentsView.getSelectionModel().selectFirst();
+		agentHBox.getChildren().add(agentsView);
 		agentHBox.getChildren().add(agentNum);
 		Button agentNumBtn = new Button("Set");
 		agentNumBtn.setOnAction(event -> this.agentNum.put(agentsView.getValue(), Math.max(0,Integer.parseInt(agentNum.getText()))));
@@ -228,6 +229,10 @@ public class OptionsStage extends Stage
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose map file");
 		File mapFile = fc.showOpenDialog(OptionsStage.this);
+		if (mapFile==null)	//user closed FileChooser before choosing file
+		{
+			return;
+		}
 		System.out.println("Chose file " + mapFile.getName());
 		this.map = new Map(mapFile);
 		this.map.analyzeMap();
@@ -239,7 +244,7 @@ public class OptionsStage extends Stage
 		System.out.println("Found resources: " + this.resourcesInMap);
 	}
 
-	/* Gets called on "Start" button click */
+	/**Gets called on "Start" button click */
 	private void setOptions()
 	{
 		boolean hasBadData = this.hasBadData();
@@ -251,23 +256,34 @@ public class OptionsStage extends Stage
 		else
 		{
 			System.out.println("Setting options");
+			Scenario oldScenario = Simulation.sim.getScenario();	//for fallback purposes
 			Scenario scenario = new Scenario();
 			Simulation.sim.setScenario(scenario);
 			scenario.setMap(this.getMap());
+			scenario.setPathfinder();
 			scenario.setResourceGoals(this.getResourceGoals());
 			scenario.setTeams(this.getTeams());
 			scenario.getMap().setDropOffSites();
 			scenario.setAgentNum(this.getAgentNum());
-			scenario.initTeams();
+			try
+			{
+				scenario.initTeams();
+				Simulation.sim.setSimUI(StartSim.simUI);
+				Simulation.sim.getSimUI().initOnSimLoad();
+			}
+			catch (NotEnoughTilesFoundException e)
+			{
+				Simulation.sim.setScenario(oldScenario);
+				new Alert(Alert.AlertType.ERROR, "Too many agents set. Please set an agent number that fits into the areas the DropoffSites are.").showAndWait();
+				return;
+			}
 
-			Simulation.sim.setSimUI(StartSim.simUI);
-			Simulation.sim.getSimUI().initOnSimLoad();
 
 			this.close();
 		}
 	}
 
-	/* Checks player input */
+	/**Checks player input */
 	private boolean hasBadData()
 	{
 		//Check if resources to gather > 0

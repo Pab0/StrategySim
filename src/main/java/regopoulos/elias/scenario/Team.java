@@ -2,12 +2,15 @@ package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
 import javafx.scene.paint.Color;
-import regopoulos.elias.scenario.pathfinding.Pathfinder;
+import regopoulos.elias.scenario.ai.Action;
+import regopoulos.elias.scenario.ai.Planner;
+import regopoulos.elias.scenario.ai.SummerAI;
 import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Team implements MapViewTeam
 {
@@ -17,9 +20,9 @@ public class Team implements MapViewTeam
 
 	private Color color;
 	private boolean[][] visibleMap;		//mask of visible portion of scenario's map
-	Pathfinder pathfinder;	//each team has its own Pathfinder object
+	private Planner planner;
 	private List<Dimension2D> dropOffSites;
-	private Agent[] agents;
+	private ArrayList<Agent> agents;
 	private int teamID;
 	private TerrainType terrainType;	//used to denote the team's dropOffSites on the map
 	private EnumMap<TerrainType,Resource> resources;
@@ -39,21 +42,15 @@ public class Team implements MapViewTeam
 
 	public void setVisibleMap(Dimension2D mapDim)
 	{
-		//TODO based on location of DropOffSite and Agents
 		this.visibleMap = new boolean[(int)mapDim.getHeight()][(int)mapDim.getWidth()];
 	}
 
-	public void setPathfinder()
+	public TerrainType getTerrainType()
 	{
-		this.pathfinder = new Pathfinder(this);
+		return terrainType;
 	}
 
-	public Pathfinder getPathfinder()
-	{
-		return pathfinder;
-	}
-
-	/* Sets this team's dropOffSites from Map */
+	/**Sets this team's dropOffSites from Map */
 	public void setDropOffSites()
 	{
 		Map map = Simulation.sim.getScenario().getMap();
@@ -76,26 +73,26 @@ public class Team implements MapViewTeam
 		return this.dropOffSites;
 	}
 
-	public void setAgents(EnumMap<AgentType, Integer> agentNum)
+	public void setAgents(EnumMap<AgentType, Integer> agentNum) throws NotEnoughTilesFoundException
 	{
-		ArrayList<Agent> agentList = new ArrayList<Agent>();
+		this.agents = new ArrayList<Agent>();
 		for (AgentType type : agentNum.keySet())
 		{
 			for (int i=0; i<agentNum.get(type); i++)
 			{
 				Agent agent = new Agent(type, this, i);
-				agentList.add(agent);
+				agents.add(agent);
 			}
 		}
-		this.agents = agentList.toArray(new Agent[agentList.size()]);
 		//set to initial positions
-		for (Agent agent : agents)
+		ArrayList<Action> initAgentPositions = Simulation.sim.getScenario().getPathfinder().findNearestEmptyTiles(this, this.agents.size());
+		for (int i=0; i<agents.size(); i++)
 		{
-			agent.initPosition();
+			agents.get(i).setPos(initAgentPositions.get(i).getPoI());
 		}
 	}
 
-	public Agent[] getAgents()
+	public ArrayList<Agent> getAgents()
 	{
 		return agents;
 	}
@@ -120,13 +117,26 @@ public class Team implements MapViewTeam
 		return resources.get(resourceType);
 	}
 
+	public ArrayList<TerrainType> getResourcesStillNeeded()
+	{
+		ArrayList res =  resources.values().stream().
+				filter(resource -> resource.getCurrent()<resource.getGoal()).
+				map(resource -> resource.getType()).
+				collect(Collectors.toCollection(ArrayList::new));
+		return res;
+	}
+
+	public void setPlanner(Planner planner)
+	{
+		this.planner = planner;
+	}
 	@Override
 	public boolean[][] getVisibleMap()
 	{
 		return this.visibleMap;
 	}
 
-	/* Returns tile as seen by team, aka true tile or unknown */
+	/**Returns tile as seen by team, aka true tile or unknown */
 	public Tile getTeamTile(int y, int x)
 	{
 		Tile tile = new Tile(TerrainType.UNKNOWN);
@@ -137,7 +147,12 @@ public class Team implements MapViewTeam
 		return tile;
 	}
 
-	/* Returns next agent from team.
+	public Planner getPlanner()
+	{
+		return planner;
+	}
+
+	/**Returns next agent from team.
 	 * Only living agents are returned, since otherwise this would be Return of the Dead.
 	 * If curAgent is null, return the first eligible agent.
 	 * Returns null if there's no further eligible agent.

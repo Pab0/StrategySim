@@ -1,14 +1,12 @@
 package regopoulos.elias.ui.gui;
 
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
+import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.MapViewTeam;
 import regopoulos.elias.scenario.Resource;
 import regopoulos.elias.scenario.Team;
@@ -20,8 +18,9 @@ public class TeamPane extends VBox implements Updateable
 	private ComboBox teamBox;
 	private ComboBox agentBox;
 	private Label resourceLabel;
+	private Label plannerLabel;
 
-	protected TeamPane(int width)
+	TeamPane(int width)
 	{
 		this.setSpacing(10);
 		this.setPadding(new Insets(20,5,20,5));
@@ -44,7 +43,8 @@ public class TeamPane extends VBox implements Updateable
 		this.getChildren().add(new Separator());
 
 		this.getChildren().add(new Label("Agent Status:"));
-		this.getChildren().add(new Label("Status goes here"));
+		this.plannerLabel = new Label();
+		this.getChildren().add(plannerLabel);
 
 	}
 
@@ -52,7 +52,7 @@ public class TeamPane extends VBox implements Updateable
 	public void update()
 	{
 		updateResourceLabel();
-		//TODO
+		updatePlannerLabel();
 	}
 
 	@Override
@@ -68,8 +68,8 @@ public class TeamPane extends VBox implements Updateable
 	public void changeSelectedTeam()
 	{
 		this.agentBox.setItems((FXCollections.observableArrayList(Simulation.sim.getSimUI().getSelectedTeam().getAgents())));
+		this.agentBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedAgent((Agent)newValue);});
 		this.agentBox.getSelectionModel().selectFirst();
-		update();
 	}
 
 	private void updateResourceLabel()
@@ -95,8 +95,25 @@ public class TeamPane extends VBox implements Updateable
 		this.resourceLabel.setText(resourcesStr);
 	}
 
-	/* To be used by the renderer */ //TODO
-	public MapViewTeam[] setMapViewTeams(Team[] realTeams)
+	/**Contains info about agent's position, goal etc */
+	private void updatePlannerLabel()
+	{
+		//TODO
+		Agent curAgent = Simulation.sim.getSimUI().getSelectedAgent();
+		if (curAgent.getType()==null)	//Knowledge about the agent of Gaia is scarce
+		{
+			return;
+		}
+		String str = "Position: ";
+		str += (int)curAgent.pos.getWidth() + ",";
+		str += (int)curAgent.pos.getHeight() + "\n";
+		str += "Action: " + "\n";
+		str += curAgent.getAction();
+		this.plannerLabel.setText(str);
+	}
+
+	/**To be used by the renderer */
+	private MapViewTeam[] setMapViewTeams(Team[] realTeams)
 	{
 		MapViewTeam[] mapViewTeams = new MapViewTeam[realTeams.length+1];
 		MapViewTeam gaia = Simulation.sim.getScenario().getGaia();
