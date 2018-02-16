@@ -99,16 +99,20 @@ public class TeamPane extends VBox implements Updateable
 	private void updatePlannerLabel()
 	{
 		//TODO
-		Agent curAgent = Simulation.sim.getSimUI().getSelectedAgent();
-		if (curAgent.getType()==null)	//Knowledge about the agent of Gaia is scarce
+		Agent selectedAgent = Simulation.sim.getSimUI().getSelectedAgent();
+		if (selectedAgent.getType()==null)	//Knowledge about the agent of Gaia is scarce
 		{
 			return;
 		}
 		String str = "Position: ";
-		str += (int)curAgent.pos.getWidth() + ",";
-		str += (int)curAgent.pos.getHeight() + "\n";
+		str += (int)selectedAgent.pos.getWidth() + ",";
+		str += (int)selectedAgent.pos.getHeight() + "\n";
 		str += "Action: " + "\n";
-		str += curAgent.getAction();
+		str += selectedAgent.getAction() + "\n";
+		str += "Health: " + selectedAgent.getHP() + "/" + selectedAgent.getType().getMaxHP() + "\n";
+		str += "Attack: " + selectedAgent.getType().getAttack() + "\n";
+		str += "Defense:" + selectedAgent.getType().getDefense() + "\n";
+		str += "Carries: " + (selectedAgent.isCarryingResource()?selectedAgent.getResouceCarrying():"Nothing");
 		this.plannerLabel.setText(str);
 	}
 

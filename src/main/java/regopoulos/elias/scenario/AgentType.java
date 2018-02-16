@@ -5,17 +5,17 @@ import javafx.scene.image.Image;
 public enum AgentType
 {
 	//TODO give each one his own icon
-	VILLAGER	(3,1,0,"agent.png"),
-	HUNTER		(4,2,0,"agent.png"),
-	GUARD		(4,1,2,"agent.png"),
-	KNIGHT		(7,3,1,"agent.png");
+	VILLAGER	(3,1,0,"villager.png"),
+	HUNTER		(4,2,0,"hunter.png"),
+	GUARD		(4,1,2,"guard.png"),
+	KNIGHT		(7,3,1,"knight.png");
 
 	int maxHP;
 	int attack;
 	int defense;
 	Image icon;
 
-	private static final String ICON_FOLDER = "icons/";
+	private static final String ICON_FOLDER = "icons/agents/";
 
 	AgentType(int maxHP, int attack, int defense, String iconName)
 	{
@@ -36,5 +36,20 @@ public enum AgentType
 	public Image getIcon()
 	{
 		return icon;
+	}
+
+	public int getMaxHP()
+	{
+		return maxHP;
+	}
+
+	public int getAttack()
+	{
+		return attack;
+	}
+
+	public int getDefense()
+	{
+		return defense;
 	}
 }

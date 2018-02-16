@@ -8,6 +8,7 @@ import javafx.scene.shape.Rectangle;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Map;
 import regopoulos.elias.scenario.Team;
+import regopoulos.elias.scenario.TerrainType;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
@@ -55,6 +56,7 @@ public class Renderer
 				if (TileChecker.isVisibleTile(y,x))
 				{
 					renderMapItem(agent.getType().getIcon(), y,x);
+					renderMapItem(team.getTeamSpotIcon(),y,x);
 				}
 			}
 		}
@@ -121,7 +123,12 @@ public class Renderer
 		{
 			for (int j=(int)upperLeftTile.getX(); j<lowerRightTile.getX(); j++)
 			{
-				renderMapItem(TileChecker.currentlyVisibleTerrain(i,j).getIcon(),i,j);
+				TerrainType type = TileChecker.currentlyVisibleTerrain(i,j);
+				renderMapItem(type.getIcon(),i,j);
+				if (type.isDropOffSite())
+				{
+					renderMapItem(Simulation.sim.getScenario().getTeamByID(type).getTeamSpotIcon(),i,j);
+				}
 			}
 		}
 	}

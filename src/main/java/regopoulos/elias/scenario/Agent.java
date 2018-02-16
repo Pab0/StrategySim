@@ -51,6 +51,16 @@ public class Agent
 		return type;
 	}
 
+	public int getHP()
+	{
+		return HP;
+	}
+
+	public TerrainType getResouceCarrying()
+	{
+		return resouceCarrying;
+	}
+
 	void setPos(int y, int x)
 	{
 		Simulation.sim.getScenario().getPositionsWithAgents().remove(pos);
@@ -64,7 +74,6 @@ public class Agent
 		{
 			//agent died, has gone to [-1,-1]
 		}
-		System.out.println("Set " + this + " to tile " + pos);
 	}
 
 	void setPos(Dimension2D dim)
@@ -161,6 +170,11 @@ public class Agent
 		this.lnkTeam.getResources().get(this.resouceCarrying).dropOff();
 		this.carriesResource = false;
 		this.resouceCarrying = null;
+	}
+
+	public void stayPut()
+	{
+		//Doesn't act or move
 	}
 
 	public void gatherResource(Tile lnkTile)

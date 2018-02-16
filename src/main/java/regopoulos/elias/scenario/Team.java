@@ -1,6 +1,7 @@
 package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.scenario.ai.Planner;
@@ -14,16 +15,14 @@ import java.util.stream.Collectors;
 
 public class Team implements MapViewTeam
 {
-	private static final short HUE_DISTANCE = 60;	//Determines each team's color's Hue
-	private static final double SATURATION = 1;	//Saturation and Brightness stay the same
-	private static final double BRIGHTNESS = 1;	//at full value
+	private static final String ICON_FOLDER = "icons/teams/";	//for the teamSpots
 
-	private Color color;
 	private boolean[][] visibleMap;		//mask of visible portion of scenario's map
 	private Planner planner;
 	private List<Dimension2D> dropOffSites;
 	private ArrayList<Agent> agents;
 	private int teamID;
+	private Image teamSpotIcon;
 	private TerrainType terrainType;	//used to denote the team's dropOffSites on the map
 	private EnumMap<TerrainType,Resource> resources;
 	private boolean finishedGathering;
@@ -31,8 +30,8 @@ public class Team implements MapViewTeam
 	public Team(TerrainType terrainType)
 	{
 		this.teamID = Character.getNumericValue(terrainType.glyph);
+		this.teamSpotIcon = new Image(ICON_FOLDER + this.teamID + ".png");
 		this.terrainType = terrainType;
-		this.color = Color.hsb((HUE_DISTANCE*teamID)%256,SATURATION,BRIGHTNESS);
 	}
 
 	public int getTeamID()
@@ -43,6 +42,11 @@ public class Team implements MapViewTeam
 	public void setVisibleMap(Dimension2D mapDim)
 	{
 		this.visibleMap = new boolean[(int)mapDim.getHeight()][(int)mapDim.getWidth()];
+	}
+
+	public Image getTeamSpotIcon()
+	{
+		return teamSpotIcon;
 	}
 
 	public TerrainType getTerrainType()
@@ -89,6 +93,7 @@ public class Team implements MapViewTeam
 		for (int i=0; i<agents.size(); i++)
 		{
 			agents.get(i).setPos(initAgentPositions.get(i).getPoI());
+			System.out.println("Set " + agents.get(i) + " to tile " + agents.get(i).pos);
 		}
 	}
 

@@ -90,6 +90,10 @@ public class Action
 				//adjacent tiles should always be visible,
 				//and thus never be candidates for exploration
 				throw new BadVisibilityException();
+			default:
+				lnkAgent.stayPut();
+				break;
+
 		}
 	}
 

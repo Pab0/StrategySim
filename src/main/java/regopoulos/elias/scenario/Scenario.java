@@ -73,7 +73,7 @@ public class Scenario
 	}
 
 	/**Convenience method for getTeamByID(int) */
-	Team getTeamByID(TerrainType type)
+	public Team getTeamByID(TerrainType type)
 	{
 		return getTeamByID(Character.getNumericValue(type.glyph));
 	}
@@ -114,7 +114,7 @@ public class Scenario
 		for (Team team : teams)
 		{
 			//TODO set correct planner for each team
-			team.setPlanner(new SummerAI(team, 0.1));	//TODO set aggressiveness back to ~0.5
+			team.setPlanner(new SummerAI(team, 0.9));	//TODO set aggressiveness back to ~0.5
 		}
 	}
 

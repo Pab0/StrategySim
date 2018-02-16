@@ -10,6 +10,7 @@ import regopoulos.elias.ui.gui.Camera;
 import regopoulos.elias.ui.gui.Renderer;
 import regopoulos.elias.ui.gui.SimWindow;
 
+import java.util.ArrayList;
 import java.util.Base64;
 
 import static regopoulos.elias.sim.TimerGranularity.AGENT;
@@ -43,8 +44,8 @@ public class SimLoop extends AnimationTimer
 		this.granularity = AGENT;
 		this.isPaused = false;
 		this.lnkSim = Simulation.sim;
-		this.curTeam = lnkSim.getScenario().getTeams()[0];
-		this.curAgent = curTeam.getAgents().get(0);
+		this.curTeam = null;	//will be set on loop
+		this.curAgent = null;	//will be set on loop
 		SimWindow sw = (SimWindow)lnkSim.getSimUI();
 		this.camera = sw.getCamera();
 		this.lnkRenderer = sw.getRenderer();
@@ -65,16 +66,16 @@ public class SimLoop extends AnimationTimer
 			switch (granularity)
 			{
 				case AGENT:
-					nextAgent();
+					doAgent();
 					break;
 				case TEAM:
-					nextTeam();
+					doTeam();
 					break;
 				case ROUND:
-					nextRound();
+					doRound();
 					break;
 				case SIMULATION:
-					nextSimulation();
+					doSimulation();
 					break;
 			}
 		}
@@ -87,15 +88,9 @@ public class SimLoop extends AnimationTimer
 		}
 	}
 
-
-	//TODO: Bug: Agent #0 seems to be called twice each time
-	private void nextAgent()
+	private void doAgent()
 	{
-		this.curAgent = curTeam.getNextAgent(curAgent);
-		if (curAgent==null)
-		{
-			nextTeam();
-		}
+		switchAgent();
 		this.roundIndicator.set("Round " + roundsCount + ", " + curTeam + ", " + curAgent);
 		try
 		{
@@ -107,53 +102,63 @@ public class SimLoop extends AnimationTimer
 		}
 	}
 
-	private void nextTeam()
+	private void doTeam()
 	{
-		this.curTeam = lnkSim.getScenario().getNextTeam(this.curTeam);
+		do
+		{
+			doAgent();
+		}while (curTeam.hasNextAgent(curAgent));
+	}
+
+	private void doRound()
+	{
+		for (Team team : Simulation.sim.getScenario().getTeams())
+		{
+			doTeam();
+		}
+	}
+
+	private void doSimulation()
+	{
+		//TODO
+	}
+
+	private void switchAgent()
+	{
 		if (curTeam==null)
 		{
-			nextRound();
+			switchTeam();
 		}
-		this.curAgent = null;	//indicating that the next team has started
-		switch (granularity)
+		this.curAgent = curTeam.getNextAgent(curAgent);
+		while (curAgent==null)	//while rather than if, to account for case where multiple teams don't have any agents left
 		{
-			case AGENT: //don't want agent granularity to morph into team granularity
-				nextAgent();
-				break;
-			default:
-				while (curTeam.hasNextAgent(curAgent))
-				{
-					nextAgent();
-				}
-				break;
+			switchTeam();
+			this.curAgent = curTeam.getNextAgent(curAgent);
 		}
 	}
 
-	private void nextRound()
+	private void switchTeam()
 	{
-		roundsCount++;
-		this.curTeam = lnkSim.getScenario().getNextTeam(this.curTeam);
-		if (lnkSim.getScenario().getWinner()!=null)
+		this.curTeam = lnkSim.getScenario().getNextTeam(curTeam);
+		if (this.curTeam==null)
 		{
-			nextSimulation();
+			switchRound();
+			this.curTeam = lnkSim.getScenario().getNextTeam(curTeam);
 		}
-		this.curTeam = null;	//indicating that the next round has started
-		switch (granularity)
-		{
-			case AGENT:	//don't want agent granularity to morph into round granularity
-			case TEAM:	//don't want team granularity to morph into round granularity
-				nextTeam();
-				break;
-			default:
-				while (lnkSim.getScenario().hasNextTeam(this.curTeam))
-				{
-					nextTeam();
-				}
-				break;
-		}
+		System.out.println("Switching to " + this.curTeam);
 	}
 
-	private void nextSimulation()
+	private void switchRound()
+	{
+		this.roundsCount++;
+		if (lnkSim.getScenario().getWinner()!=null)//TODO set winner
+		{
+			switchSimulation();
+		}
+		System.out.println("\nEntering round No." + roundsCount);
+	}
+
+	private void switchSimulation()
 	{
 		//TODO
 	}

@@ -2,8 +2,6 @@ package regopoulos.elias.scenario;
 
 import javafx.scene.image.Image;
 
-import javax.imageio.ImageIO;
-
 public enum TerrainType
 {
 	GRASS	('.',0,true,"grass.png"),
@@ -24,7 +22,7 @@ public enum TerrainType
 	public boolean traversable;
 	boolean isDropOffSite;
 
-	private static final String ICON_FOLDER = "icons/";
+	private static final String ICON_FOLDER = "icons/terrain/";
 
 	TerrainType(char glyph, int capacity, String iconName)
 	{
@@ -54,9 +52,19 @@ public enum TerrainType
 		return isResource;
 	}
 
+	public boolean isDropOffSite()
+	{
+		return isDropOffSite;
+	}
+
 	public Image getIcon()
 	{
 		return icon;
+	}
+
+	public char getGlyph()
+	{
+		return glyph;
 	}
 
 	static TerrainType getTerrain(char glyph)
