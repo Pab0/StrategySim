@@ -3,6 +3,7 @@ package regopoulos.elias.ui.gui;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import regopoulos.elias.sim.Simulation;
+import regopoulos.elias.log.LogOutput;
 
 public class InputHandler
 {

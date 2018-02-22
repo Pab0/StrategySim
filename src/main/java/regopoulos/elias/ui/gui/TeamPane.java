@@ -28,6 +28,7 @@ public class TeamPane extends VBox implements Updateable
 
 		this.getChildren().add(new Label("Team:"));
 		this.teamBox = new ComboBox();
+		this.teamBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedTeam((MapViewTeam)newValue);});
 		this.getChildren().add(teamBox);
 
 		this.getChildren().add(new Label("Resources:"));
@@ -38,6 +39,7 @@ public class TeamPane extends VBox implements Updateable
 
 		this.getChildren().add(new Label("Team's Agents:"));
 		this.agentBox = new ComboBox();
+		this.agentBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedAgent((Agent)newValue);});
 		this.getChildren().add(agentBox);
 
 		this.getChildren().add(new Separator());
@@ -60,21 +62,21 @@ public class TeamPane extends VBox implements Updateable
 	{
 		this.mapViewTeams = setMapViewTeams(Simulation.sim.getScenario().getTeams());
 		this.teamBox.setItems(FXCollections.observableArrayList(this.mapViewTeams));
-		this.teamBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedTeam((MapViewTeam)newValue);});
+//		this.teamBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedTeam((MapViewTeam)newValue);});
 		this.teamBox.getSelectionModel().selectFirst();
 		update();
 	}
 
-	public void changeSelectedTeam()
+	void changeSelectedTeam()
 	{
 		this.agentBox.setItems((FXCollections.observableArrayList(Simulation.sim.getSimUI().getSelectedTeam().getAgents())));
-		this.agentBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedAgent((Agent)newValue);});
+//		this.agentBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedAgent((Agent)newValue);});
 		this.agentBox.getSelectionModel().selectFirst();
 	}
 
 	private void updateResourceLabel()
 	{
-		String resourcesStr = new String();
+		String resourcesStr = "";
 		//No resources for Gaia team
 		if (Simulation.sim.getSimUI().getSelectedTeam().equals(Simulation.sim.getScenario().getGaia()))
 		{
@@ -98,10 +100,15 @@ public class TeamPane extends VBox implements Updateable
 	/**Contains info about agent's position, goal etc */
 	private void updatePlannerLabel()
 	{
-		//TODO
 		Agent selectedAgent = Simulation.sim.getSimUI().getSelectedAgent();
+		MapViewTeam selectedTeam = Simulation.sim.getSimUI().getSelectedTeam();
 		if (selectedAgent.getType()==null)	//Knowledge about the agent of Gaia is scarce
 		{
+			return;
+		}
+		else if (!selectedAgent.getTeam().equals(selectedTeam))	//empty team, don't display last selected live agent
+		{
+			this.plannerLabel.setText("");
 			return;
 		}
 		String str = "Position: ";

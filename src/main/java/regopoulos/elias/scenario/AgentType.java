@@ -4,7 +4,6 @@ import javafx.scene.image.Image;
 
 public enum AgentType
 {
-	//TODO give each one his own icon
 	VILLAGER	(3,1,0,"villager.png"),
 	HUNTER		(4,2,0,"hunter.png"),
 	GUARD		(4,1,2,"guard.png"),

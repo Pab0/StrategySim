@@ -18,15 +18,23 @@ import java.util.Random;
  */
 public class SummerAI extends Planner
 {
+	private static final String NAME = "SummerAI";
+
+	private static final double DEFAULT_AGGRO = 0.5;
 	private static final int RANDOM_SEED = 0;
 	private Random random;
-	double aggressiveness;	//likelihood of attacking: [0,1]
+	private double aggressiveness;	//likelihood of attacking: [0,1]
 
 	public SummerAI(Team lnkTeam, double aggressiveness)
 	{
 		super(lnkTeam);
 		this.aggressiveness = aggressiveness;
 		this.random = new Random(SummerAI.RANDOM_SEED);
+	}
+
+	public SummerAI(Team lnkTeam)
+	{
+		this(lnkTeam, SummerAI.DEFAULT_AGGRO);
 	}
 
 	@Override
@@ -56,7 +64,7 @@ public class SummerAI extends Planner
 	 * so this always returns true.
 	 */
 	//TODO: SpringAI has terrainType.canBeDoneBy(agent.getType()) instead
-	private boolean isElligibleForAction(Agent agent, ActionType type)
+	public boolean isElligibleForAction(Agent agent, ActionType type)
 	{
 		return true;
 	}
@@ -106,5 +114,11 @@ public class SummerAI extends Planner
 			//No (path to) action found - most likely surrounded by teammates
 		}
 		return bestAction;
+	}
+
+	@Override
+	public String getPlannerName()
+	{
+		return SummerAI.NAME;
 	}
 }

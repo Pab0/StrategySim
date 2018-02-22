@@ -40,7 +40,7 @@ class MapAnalyzer
 	/**Scans map's tiles and marks all terrain types it comes across as true */
 	private static EnumMap<TerrainType, Boolean> scanMap(Map map)
 	{
-		EnumMap<TerrainType, Boolean> resourceContainedInMap = new EnumMap<TerrainType, Boolean>(TerrainType.class);
+		EnumMap<TerrainType, Boolean> resourceContainedInMap = new EnumMap<>(TerrainType.class);
 		for (Tile[] line : map.map)
 		{
 			for (Tile tile : line)
@@ -53,7 +53,7 @@ class MapAnalyzer
 
 	static ArrayList<DropOffSite> getDropOffSites(Map map)
 	{
-		ArrayList<DropOffSite> dropOffSitesList = new ArrayList<DropOffSite>();
+		ArrayList<DropOffSite> dropOffSitesList = new ArrayList<>();
 		for (int i=0; i<map.getHeight(); i++)
 		{
 			for (int j=0; j<map.getWidth(); j++)

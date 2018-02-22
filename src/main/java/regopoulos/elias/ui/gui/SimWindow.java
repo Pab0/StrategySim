@@ -12,6 +12,7 @@ import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.MapViewTeam;
 import regopoulos.elias.sim.SimLoop;
 import regopoulos.elias.sim.Simulation;
+import regopoulos.elias.log.LogOutput;
 import regopoulos.elias.ui.SimulationUI;
 
 import java.io.InputStream;
@@ -101,14 +102,17 @@ public class SimWindow extends Application implements SimulationUI
 
 	public void initOnSimLoad()
 	{
+		Simulation.sim.getScenario().close();
+
 		this.selectedTeam = Simulation.sim.getScenario().getTeams()[0];
 		this.selectedAgent = this.selectedTeam.getAgents().get(0);
 		this.camera = new Camera(this.canvas);
 		this.renderer.setCamera(camera);
-		SimLoop simLoop = new SimLoop();
+		SimLoop simLoop = Simulation.sim.getSimLoop()==null?new SimLoop():Simulation.sim.getSimLoop().restartedLoop();
 		Simulation.sim.setSimLoop(simLoop);
 		this.teamPane.initOnSimLoad();
 		this.menuBar.initOnSimLoad();
+		this.logBar.initOnSimLoad();
 
 		simLoop.start();
 	}

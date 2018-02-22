@@ -21,7 +21,6 @@ public class TileChecker
 				x<realMap.getWidth() &&
 				y>=0 &&
 				y<realMap.getHeight());
-//		System.out.println(y + "," + x + " is in bounds: " + inBounds);
 		return inBounds;
 	}
 	//convenience method
@@ -37,7 +36,6 @@ public class TileChecker
 		boolean traversable = ignoreVisibility ?
 				realMap.getTileMap()[y][x].getTerrainType().traversable :
 				lnkTeam.getTeamTile(y,x).getTerrainType().traversable;
-//		System.out.println(y + "," + x + " is traversable: " + traversable);
 		return traversable;
 	}
 	//convenience method

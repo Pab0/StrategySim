@@ -25,7 +25,6 @@ public class Team implements MapViewTeam
 	private Image teamSpotIcon;
 	private TerrainType terrainType;	//used to denote the team's dropOffSites on the map
 	private EnumMap<TerrainType,Resource> resources;
-	private boolean finishedGathering;
 
 	public Team(TerrainType terrainType)
 	{
@@ -188,7 +187,12 @@ public class Team implements MapViewTeam
 
 	public boolean hasWon()
 	{
-		return finishedGathering;
+		return (getResourcesStillNeeded().size()==0);
+	}
+
+	public void win()
+	{
+		Simulation.sim.log(this + "has won.");
 	}
 
 	@Override

@@ -4,22 +4,40 @@ import javafx.geometry.Dimension2D;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Map
 {
+	private String fileName;
 	private int width, height;
 	Tile[][] map;
+	private Tile[][] originalMap; //Used for preserving initial map intact across multiple scenario runs.
 	private ArrayList<TerrainType> resourcesInMap;
 	private ArrayList<TerrainType> teamsInMap;
 	private ArrayList<DropOffSite> dropOffSites;
 
 	public Map(File file)
 	{
+		this.fileName = file.getName();
 		this.map = MapBuilder.getTileMap(file);
 		this.width = this.map[0].length;
 		this.height = this.map.length;
+		this.originalMap = new Tile[this.height][this.width];
+		for (int i=0; i<this.height; i++)
+		{
+			for (int j=0; j<this.width; j++)
+			{
+				this.originalMap[i][j] = this.map[i][j].copy();
+			}
+		}
+	}
+
+	public Map(int height, int width)
+	{
+		this.height = height;
+		this.width = width;
 	}
 
 	public void analyzeMap()
@@ -84,4 +102,31 @@ public class Map
 	{
 		return this.height;
 	}
+
+	public String getFileName()
+	{
+		return fileName;
+	}
+
+	/**Returns a clone of this map.
+	 * Used for preserving initial map intact across multiple scenario runs.
+	 * @return
+	 */
+	public Map clone()
+	{
+		Map map = new Map(this.height, this.width);
+		map.map = new Tile[this.height][this.width];
+		for (int i=0; i<this.height; i++)
+		{
+			for (int j=0; j<this.width; j++)
+			{
+				map.map[i][j] = this.originalMap[i][j].copy();
+			}
+		}
+		map.originalMap = this.originalMap;
+		map.dropOffSites = this.dropOffSites;
+		map.fileName = this.fileName;
+		return map;
+	}
+
 }

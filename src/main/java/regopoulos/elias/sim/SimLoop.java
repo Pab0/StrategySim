@@ -10,9 +10,6 @@ import regopoulos.elias.ui.gui.Camera;
 import regopoulos.elias.ui.gui.Renderer;
 import regopoulos.elias.ui.gui.SimWindow;
 
-import java.util.ArrayList;
-import java.util.Base64;
-
 import static regopoulos.elias.sim.TimerGranularity.AGENT;
 
 /**Acts as the game loop
@@ -25,6 +22,7 @@ public class SimLoop extends AnimationTimer
 
 	private TimerGranularity granularity;
 	private boolean isPaused;	//Concerns simulation. Rendering speed remains independent
+	private boolean isFinished;
 	private double simulationTickTime = DEFAULT_SIM_TICK_TIME;	//time to wait, in ms, between different each simulation's tick. Rendering speed remains independent.
 	private double lastSimTick;	//in ms
 	private double msPassed;
@@ -53,6 +51,15 @@ public class SimLoop extends AnimationTimer
 		this.simTickTimeIndicator = new SimpleStringProperty("Sim tick indicator");
 	}
 
+	public SimLoop restartedLoop()
+	{
+		this.roundsCount = 0;
+		this.isFinished = false;
+		SimWindow sw = (SimWindow)lnkSim.getSimUI();
+		this.camera = sw.getCamera();
+		return this;
+	}
+
 	/**Each SimLoop tick (called from JavaFX itself, defaults to 60 fps)
 	 * the scene ought to be rendered. Depending on the granularity
 	 * we wish for, one agent, one team, all teams, or the whole simulation
@@ -61,7 +68,7 @@ public class SimLoop extends AnimationTimer
 	@Override
 	public void handle(long now)
 	{
-		if (!isPaused && !waitForNextStep())
+		if (!isPaused && !waitForNextStep() && !isFinished)
 		{
 			switch (granularity)
 			{
@@ -73,9 +80,6 @@ public class SimLoop extends AnimationTimer
 					break;
 				case ROUND:
 					doRound();
-					break;
-				case SIMULATION:
-					doSimulation();
 					break;
 			}
 		}
@@ -91,6 +95,10 @@ public class SimLoop extends AnimationTimer
 	private void doAgent()
 	{
 		switchAgent();
+		if (isFinished)	//don't calculate to end of team/round, if scenario is finished
+		{
+			return;
+		}
 		this.roundIndicator.set("Round " + roundsCount + ", " + curTeam + ", " + curAgent);
 		try
 		{
@@ -118,9 +126,21 @@ public class SimLoop extends AnimationTimer
 		}
 	}
 
-	private void doSimulation()
+	private void endScenario()
 	{
-		//TODO
+		Simulation.sim.log("Scenario run No." + lnkSim.getScenario().getRunCount() + " has ended.");
+		Team winner = lnkSim.getScenario().getWinner();
+		winner.win();
+		lnkSim.getScenario().finish();
+
+		if (lnkSim.hasFinished())
+		{
+			lnkSim.finish();
+		}
+		else
+		{
+			lnkSim.getScenario().restart();
+		}
 	}
 
 	private void switchAgent()
@@ -145,24 +165,24 @@ public class SimLoop extends AnimationTimer
 			switchRound();
 			this.curTeam = lnkSim.getScenario().getNextTeam(curTeam);
 		}
-		System.out.println("Switching to " + this.curTeam);
+		if (!isFinished)
+		{
+			Simulation.sim.log("Switching to " + this.curTeam);
+		}
 	}
 
 	private void switchRound()
 	{
 		this.roundsCount++;
-		if (lnkSim.getScenario().getWinner()!=null)//TODO set winner
+		if (lnkSim.getScenario().hasWinner())
 		{
-			switchSimulation();
+			endScenario();
 		}
-		System.out.println("\nEntering round No." + roundsCount);
+		if (!isFinished)
+		{
+			Simulation.sim.log("\nEntering round No." + roundsCount);
+		}
 	}
-
-	private void switchSimulation()
-	{
-		//TODO
-	}
-
 
 	public void setGranularity(TimerGranularity granularity)
 	{
@@ -214,5 +234,10 @@ public class SimLoop extends AnimationTimer
 		simulationTickTime = Math.min(simulationTickTime, SimLoop.MAX_SIM_TICK_TIME);
 		simulationTickTime = Math.max(simulationTickTime, SimLoop.MIN_SIM_TICK_TIME);
 		this.simTickTimeIndicator.set("Sim tick: " + String.format("%.2f",this.simulationTickTime) + "ms");
+	}
+
+	void finish()
+	{
+		this.isFinished = true;
 	}
 }

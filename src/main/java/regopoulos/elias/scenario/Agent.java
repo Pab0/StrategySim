@@ -21,7 +21,6 @@ public class Agent
 	private boolean carriesResource;
 	private int HP;
 	private int attack, defense;
-	private double stepsToMake;		//accumulating steps according to speed
 
 	public Dimension2D pos;	//agent's current position
 	private ArrayList<Action> possibleActions;	//list of actions to be examined, one of which will be chosen.
@@ -113,7 +112,7 @@ public class Agent
 			}
 			catch (Exception e)
 			{
-				System.out.println("Oopsie daisy");
+				e.printStackTrace();
 			}
 		}
 		//sanity check, also used when setting the initial position
@@ -141,13 +140,13 @@ public class Agent
 		ArrayList<Dimension2D> path = this.action.getPath();
 		setPos(path.get(0));
 		this.action.getPath().remove(0);
-		System.out.println("Moved to " + this.pos);
+		Simulation.sim.log("Moved to " + this.pos);
 	}
 
 	private void doAction() throws BadVisibilityException
 	{
 		this.action.doAction(this);
-		System.out.println("Did " + this.action);
+		Simulation.sim.log("Did " + this.action);
 	}
 
 	public boolean isCarryingResource()
@@ -192,10 +191,10 @@ public class Agent
 	private void die()	//the "void" type feels oddly fitting for this mortal function
 	{
 		this.HP = 0;
-		this.setPos(-1,-1);
-		Simulation.sim.getScenario().getPositionsWithAgents().remove(pos);
 		this.lnkTeam.getAgents().remove(this);
-		System.out.println("Requiescat in pace, " + this);
+		Simulation.sim.getScenario().getPositionsWithAgents().remove(pos);
+		this.setPos(-1,-1);
+		Simulation.sim.log("Requiescat in pace, " + this);
 	}
 
 	public void update() throws BadVisibilityException
@@ -203,7 +202,7 @@ public class Agent
 		lookAround();
 		//Plan new Action
 		this.action = lnkTeam.getPlanner().getNextAction(this);
-		System.out.println(this + " chose action " + action);
+		Simulation.sim.log(this + " chose action " + action);
 		//Ask Pathfinder for closest adjacent goal, and path towards it
 		//move on path, or carry out action (can't do both in same round)
 		moveOrDo();

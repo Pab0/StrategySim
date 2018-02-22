@@ -10,44 +10,44 @@ public class CLUI implements SimulationUI
 	@Override
 	public void start(String[] args)
 	{
-		//TODO might not implement CLUI at all though
+		//Placeholder, CLUI won't be implemented at all though
 	}
 
 	@Override
 	public void initOnSimLoad()
 	{
-		//TODO might not implement CLUI at all though
+		//Placeholder, CLUI won't be implemented at all though
 	}
 
 	@Override
 	public void log(String string)
 	{
-		//TODO might not implement CLUI at all though
+		//Placeholder, CLUI won't be implemented at all though
 	}
 
 	@Override
 	public Team getSelectedTeam()
 	{
-		//TODO might not implement CLUI at all though
+		//Placeholder, CLUI won't be implemented at all though
 		return null;
 	}
 
 	@Override
 	public void setSelectedTeam(MapViewTeam team)
 	{
-		//TODO might not implement CLUI at all though
+		//Placeholder, CLUI won't be implemented at all though
 	}
 
 	@Override
 	public Agent getSelectedAgent()
 	{
-		//TODO might not implement CLUI at all though
+		//Placeholder, CLUI won't be implemented at all though
 		return null;
 	}
 
 	@Override
 	public void setSelectedAgent(Agent agent)
 	{
-
+		//Placeholder, CLUI won't be implemented at all though
 	}
 }

@@ -22,9 +22,9 @@ public class PathfinderGoals
 
 	public PathfinderGoals()
 	{
-		this.objectsToFind = new HashMap<TerrainType, Integer>();
-		this.objectsFound = new HashMap<TerrainType, ArrayList<Action>>();
-		this.enemiesFound = new ArrayList<Action>();
+		this.objectsToFind = new HashMap<>();
+		this.objectsFound = new HashMap<>();
+		this.enemiesFound = new ArrayList<>();
 	}
 
 	public void addGoal(ActionType type, Team lnkTeam)
@@ -46,7 +46,7 @@ public class PathfinderGoals
 	void addObjectsToFind(TerrainType type, int amount)
 	{
 		this.objectsToFind.put(type, amount);
-		this.objectsFound.put(type, new ArrayList<Action>());
+		this.objectsFound.put(type, new ArrayList<>());
 	}
 
 	private void addEnemiesToFind(int amount)
@@ -57,7 +57,7 @@ public class PathfinderGoals
 	void checkIfGoal(Node node, Team lnkTeam, boolean[][] visibleMap)
 	{
 		TerrainType type = Simulation.sim.getScenario().getMap().getTerrainAt(node.y, node.x);
-		if (!visibleMap[node.y][node.x])	//Exploring the unknown
+		if (!visibleMap[node.y][node.x] && objectsToFind.keySet().contains(TerrainType.UNKNOWN))	//Exploring the unknown
 		{
 			foundObjectGoal(TerrainType.UNKNOWN, node);
 		}
@@ -119,7 +119,7 @@ public class PathfinderGoals
 
 	public ArrayList<Action> toArrayList()
 	{
-		ArrayList<Action> actions = new ArrayList<Action>();
+		ArrayList<Action> actions = new ArrayList<>();
 		for (ArrayList<Action> actionList : this.objectsFound.values())
 		{
 			actions.addAll(actionList);

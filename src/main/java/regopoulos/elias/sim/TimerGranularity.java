@@ -9,6 +9,5 @@ public enum TimerGranularity
 {
 	AGENT		(),
 	TEAM		(),
-	ROUND		(),
-	SIMULATION	();
+	ROUND		()
 }

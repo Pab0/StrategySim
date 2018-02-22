@@ -1,4 +1,4 @@
-package regopoulos.elias.ui.gui;
+package regopoulos.elias.log;
 
 public interface LogOutput
 {

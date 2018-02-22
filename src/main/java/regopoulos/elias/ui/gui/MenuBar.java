@@ -79,7 +79,7 @@ public class MenuBar extends ToolBar implements Updateable
 	@Override
 	public void update()
 	{
-		//TODO resources
+		//Nothing to update on the menu bar, round indicator gets updated by its listener
 	}
 
 	@Override

@@ -15,7 +15,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import regopoulos.elias.StartSim;
+import regopoulos.elias.log.Logger;
 import regopoulos.elias.scenario.*;
+import regopoulos.elias.scenario.ai.Planner;
 import regopoulos.elias.sim.Simulation;
 
 import java.io.File;
@@ -26,8 +28,8 @@ public class OptionsStage extends Stage
 {
 	private static final int WIDTH 	= 600;
 	private static final int HEIGHT	= 800;
-	private static final int CANVAS_WIDTH = WIDTH-100;
-	private static final int CANVAS_HEIGHT = 800/2;
+	private static final int CANVAS_WIDTH = 300;
+	private static final int CANVAS_HEIGHT = CANVAS_WIDTH;
 
 	private Canvas canvas;
 	private Map map;
@@ -39,6 +41,7 @@ public class OptionsStage extends Stage
 	//EnumMaps for the Scenario to be set to
 	//TODO display default values in TextBox
 	private EnumMap<TerrainType, Integer> resourceGoals;
+	private EnumMap<TerrainType, String> assignedPlanners;
 	private EnumMap<AgentType, Integer> agentNum;
 
 	OptionsStage()
@@ -46,6 +49,7 @@ public class OptionsStage extends Stage
 		this.resourcesInMap	= 	FXCollections.observableArrayList();
 		this.teamsInMap 	=	FXCollections.observableArrayList();
 		this.resourceGoals 	= 	new EnumMap<TerrainType, Integer>(TerrainType.class);
+		this.assignedPlanners=	new EnumMap<TerrainType, String>(TerrainType.class);
 		this.agentNum 		=	new EnumMap<AgentType, Integer>(AgentType.class);
 		initResourceGoals();
 		initAgentNums();
@@ -65,11 +69,15 @@ public class OptionsStage extends Stage
 		}
 		if (this.resourcesInMap.contains(TerrainType.TREE))
 		{
-			this.resourceGoals.put(TerrainType.TREE, Scenario.DEFAULT_WOOD_GOAL);
+			this.resourceGoals.put(TerrainType.TREE, ScenarioOptions.DEFAULT_WOOD_GOAL);
+		}
+		if (this.resourcesInMap.contains(TerrainType.STONE))
+		{
+			this.resourceGoals.put(TerrainType.STONE, ScenarioOptions.DEFAULT_STONE_GOAL);
 		}
 		if (this.resourcesInMap.contains(TerrainType.GOLD))
 		{
-			this.resourceGoals.put(TerrainType.GOLD, Scenario.DEFAULT_GOLD_GOAL);
+			this.resourceGoals.put(TerrainType.GOLD, ScenarioOptions.DEFAULT_GOLD_GOAL);
 		}
 	}
 
@@ -79,7 +87,7 @@ public class OptionsStage extends Stage
 		{
 			this.agentNum.put(agentType,0);
 		}
-		this.agentNum.put(AgentType.VILLAGER, Scenario.DEFAULT_VILLAGER_COUNT);
+		this.agentNum.put(AgentType.VILLAGER, ScenarioOptions.DEFAULT_VILLAGER_COUNT);
 	}
 
 	private VBox populateOptionStage()
@@ -103,6 +111,10 @@ public class OptionsStage extends Stage
 
 		//Agent Number
 		vBox.getChildren().add(agentHBox());
+		vBox.getChildren().add(new Separator());
+
+		//Team planners
+		vBox.getChildren().add(plannerHBox());
 		vBox.getChildren().add(new Separator());
 
 		//StartButton
@@ -176,6 +188,23 @@ public class OptionsStage extends Stage
 		return agentHBox;
 	}
 
+	private HBox plannerHBox()
+	{
+		HBox plannerHBox = new HBox();
+		plannerHBox.setSpacing(10);
+		plannerHBox.getChildren().add(new Label("Planners for Teams: "));
+		ChoiceBox<TerrainType> teamsView = new ChoiceBox<TerrainType>();
+		teamsView.setItems(this.teamsInMap);
+		plannerHBox.getChildren().add(teamsView);
+		ChoiceBox<String> plannersView = new ChoiceBox<>();
+		plannersView.setItems(FXCollections.observableArrayList(Planner.getPlannerTypes()));
+		plannerHBox.getChildren().add(plannersView);
+		Button setPlannerBtn = new Button("Assign planner");
+		setPlannerBtn.setOnAction(event -> this.assignedPlanners.put(teamsView.getValue(), plannersView.getValue()));
+		plannerHBox.getChildren().add(setPlannerBtn);
+		return plannerHBox;
+	}
+
 	private HBox startHBox()
 	{
 		HBox startHBox = new HBox();
@@ -197,9 +226,9 @@ public class OptionsStage extends Stage
 		if (tileWidth<2 || tileHeight<2)
 		{
 			gc.strokeText("Map dimensions " +
-					"(" + this.map.getHeight() + "," + this.map.getWidth() + ")" +
+					"(" + this.map.getHeight() + "," + this.map.getWidth() + ")" + "\n" +
 					" too big to render preview.",
-					this.canvas.getWidth()/2-200, this.canvas.getHeight()/2);
+					this.canvas.getWidth()/2-100, this.canvas.getHeight()/2);
 			return;
 		}
 		//Draw tiles
@@ -259,17 +288,19 @@ public class OptionsStage extends Stage
 			Scenario oldScenario = Simulation.sim.getScenario();	//for fallback purposes
 			Scenario scenario = new Scenario();
 			Simulation.sim.setScenario(scenario);
-			scenario.setMap(this.getMap());
-			scenario.setPathfinder();
-			scenario.setResourceGoals(this.getResourceGoals());
-			scenario.setTeams(this.getTeams());
-			scenario.getMap().setDropOffSites();
-			scenario.setAgentNum(this.getAgentNum());
+			Simulation.sim.setLogger(new Logger());
+			ScenarioOptions options = new ScenarioOptions();
+			scenario.setOptions(options);
+			options.setMap(this.getMap());
+			options.setResourceGoals(this.getResourceGoals());
+			options.setTeams(this.getTeams());
+			options.setAgentNum(this.getAgentNum());
+			options.setPlanners(this.getPlanners());
 			try
 			{
-				scenario.initTeams();
 				Simulation.sim.setSimUI(StartSim.simUI);
-				Simulation.sim.getSimUI().initOnSimLoad();
+				scenario.init();
+				Simulation.sim.getLogger().start();
 			}
 			catch (NotEnoughTilesFoundException e)
 			{
@@ -320,6 +351,21 @@ public class OptionsStage extends Stage
 			teams[i] = team;
 		}
 		return teams;
+	}
+
+	private EnumMap<TerrainType, Planner> getPlanners()
+	{
+		EnumMap<TerrainType,Planner> map = new EnumMap<TerrainType, Planner>(TerrainType.class);
+		for (TerrainType terrainType : this.teamsInMap)
+		{
+			String plannerName = this.assignedPlanners.get(terrainType);
+			if (plannerName==null)
+			{
+				plannerName = Planner.DEFAULT_AI;
+			}
+			map.put(terrainType,Planner.createPlannerByName(plannerName, Simulation.sim.getScenario().getTeamByID(terrainType)));
+		}
+		return map;
 	}
 
 	private EnumMap<TerrainType, Integer> getResourceGoals()

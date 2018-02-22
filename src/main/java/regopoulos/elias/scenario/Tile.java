@@ -33,4 +33,10 @@ public class Tile
 	{
 		return this.terrainType;
 	}
+
+	public Tile copy()
+	{
+		Tile tile = new Tile(this.terrainType);
+		return tile;
+	}
 }

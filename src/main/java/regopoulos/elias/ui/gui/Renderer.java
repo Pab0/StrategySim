@@ -1,5 +1,6 @@
 package regopoulos.elias.ui.gui;
 
+import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -9,14 +10,16 @@ import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Map;
 import regopoulos.elias.scenario.Team;
 import regopoulos.elias.scenario.TerrainType;
+import regopoulos.elias.scenario.pathfinding.PathfindingIcons;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
+import java.util.ArrayList;
 
 
 public class Renderer
 {
-	static final short TILE_WIDTH = 20;
+	static final short TILE_WIDTH = 30;
 
 	public Point2D mapTileCapacity;	//how many tiles fit onto the canvas
 	private Point2D tileOffset;			//how many tiles one should shift
@@ -25,6 +28,8 @@ public class Renderer
 	private GraphicsContext gc;
 	private Camera camera;
 
+	private PathfindingIcons pathfindingIcons;
+
 	Renderer(GraphicsContext gc)
 	{
 		this.gc = gc;
@@ -32,6 +37,8 @@ public class Renderer
 												gc.getCanvas().getHeight()/TILE_WIDTH);
 		this.tileOffset = new Point2D(0,0);
 		this.subTileOffset = new Point2D(0,0);
+
+		this.pathfindingIcons = new PathfindingIcons();
 	}
 
 	public void render()
@@ -145,7 +152,31 @@ public class Renderer
 					(x+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
 					(y+tileOffset.getY())*TILE_WIDTH + subTileOffset.getY(),
 					TILE_WIDTH,TILE_WIDTH);
+			if (selAgent.getAction()!=null)
+			{
+				renderPath(selAgent.getAction().getPath());
+				renderGoal(selAgent.getAction().getPoI());
+			}
 		}
+	}
+
+	/** Renders the path from the agent to its chosen goal*/
+	private void renderPath(ArrayList<Dimension2D> path)
+	{
+		Image pathIcon = this.pathfindingIcons.getPathIcon();
+		for (Dimension2D node : path)
+		{
+			if (!node.equals(path.get(path.size()-1)))	//don't render goal as part of path
+			{
+				renderMapItem(pathIcon, (int)node.getHeight(), (int)node.getWidth());
+			}
+		}
+	}
+
+	/** Marks the agent's goal on the map */
+	private void renderGoal(Dimension2D goal)
+	{
+		renderMapItem(this.pathfindingIcons.getGoalIcon(), (int)goal.getHeight(), (int)goal.getWidth());
 	}
 
 	/**Renders item with position y,x on map.

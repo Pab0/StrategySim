@@ -2,8 +2,6 @@ package regopoulos.elias.ui;
 
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.MapViewTeam;
-import regopoulos.elias.scenario.Team;
-import regopoulos.elias.ui.gui.LogOutput;
 
 public interface SimulationUI
 {
@@ -20,6 +18,4 @@ public interface SimulationUI
 	public Agent getSelectedAgent();
 
 	public void setSelectedAgent(Agent agent);
-
-	//TODO: update()
 }

@@ -1,9 +1,12 @@
 package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
+import regopoulos.elias.scenario.ai.Planner;
 import regopoulos.elias.scenario.ai.SpringAI;
 import regopoulos.elias.scenario.ai.SummerAI;
 import regopoulos.elias.scenario.pathfinding.Pathfinder;
+import regopoulos.elias.sim.SimLoop;
+import regopoulos.elias.sim.Simulation;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -11,12 +14,7 @@ import java.util.HashMap;
 
 public class Scenario
 {
-
-	public static final int DEFAULT_WOOD_GOAL = 5;
-	public static final int DEFAULT_GOLD_GOAL = 2;
-
-	public static final int DEFAULT_VILLAGER_COUNT = 5;
-
+	private ScenarioOptions scenarioOptions;
 	private Map map;
 	private Pathfinder pathfinder;
 	private Team[] teams;
@@ -24,15 +22,37 @@ public class Scenario
 	private EnumMap<TerrainType, Integer> resourceGoals;
 	private EnumMap<AgentType, Integer> agentNum;
 	private HashMap<Dimension2D, Agent> agentPos;	//keeps a record of all positions occupied by an agent
-	// TODO update this whenever an Agent moves
+	private int runCount;	//keeps track of how many times the current Scenario has already finished.
 
 	public Scenario()
 	{
 		this.gaia = new GaiaTeam();	//Gaia is omnipresent
-		this.agentPos = new HashMap<Dimension2D, Agent>();
 	}
 
-	public HashMap<Dimension2D, Agent> getPositionsWithAgents()
+	public void setOptions(ScenarioOptions options)
+	{
+		this.scenarioOptions = options;
+	}
+
+	public ScenarioOptions getScenarioOptions()
+	{
+		return scenarioOptions;
+	}
+
+	/**All operations needed when Scenario
+	 * is initiliazed or restarted.
+	 */
+	public void init() throws NotEnoughTilesFoundException
+	{
+		scenarioOptions.setOptionsToScenario(this);
+		this.agentPos = new HashMap<>();
+		this.setPathfinder();
+		this.getMap().setDropOffSites();
+		this.initTeams();
+		Simulation.sim.getSimUI().initOnSimLoad();
+	}
+
+	HashMap<Dimension2D, Agent> getPositionsWithAgents()
 	{
 		return agentPos;
 	}
@@ -47,7 +67,7 @@ public class Scenario
 		return map;
 	}
 
-	public void setPathfinder()
+	private void setPathfinder()
 	{
 		this.pathfinder = new Pathfinder();
 	}
@@ -57,7 +77,7 @@ public class Scenario
 		return pathfinder;
 	}
 
-	public void setTeams(Team[] teams)
+	void setTeams(Team[] teams)
 	{
 		this.teams = teams;
 	}
@@ -69,7 +89,7 @@ public class Scenario
 
 	private Team getTeamByID(int ID)
 	{
-		return Arrays.stream(this.teams).filter(team -> team.getTeamID()==ID).findAny().get();
+		return Arrays.stream(this.scenarioOptions.getTeams()).filter(team -> team.getTeamID()==ID).findAny().get();
 	}
 
 	/**Convenience method for getTeamByID(int) */
@@ -78,15 +98,24 @@ public class Scenario
 		return getTeamByID(Character.getNumericValue(type.glyph));
 	}
 
-	public void setResourceGoals(EnumMap<TerrainType, Integer> resourceGoals)
+	void setResourceGoals(EnumMap<TerrainType, Integer> resourceGoals)
 	{
 		this.resourceGoals = resourceGoals;
-		System.out.println(this.resourceGoals);
 	}
 
 	int getResourceGoal(TerrainType terrainType)
 	{
 		return resourceGoals.get(terrainType);
+	}
+
+	public void setPlanners(EnumMap<TerrainType, Planner> map)
+	{
+		for (TerrainType type : map.keySet())
+		{
+			Team team = Simulation.sim.getScenario().getTeamByID(type);
+			team.setPlanner(map.get(type));
+			System.out.println("Assigned " + team + " to " + team.getPlanner());
+		}
 	}
 
 	public GaiaTeam getGaia()
@@ -97,25 +126,14 @@ public class Scenario
 	public void setAgentNum(EnumMap<AgentType, Integer> agentNum)
 	{
 		this.agentNum = agentNum;
-		System.out.println(this.agentNum);
 	}
 
 	public void initTeams() throws NotEnoughTilesFoundException
 	{
-		setPlanners();
 		setDropOffSites();
 		setVisibleMaps();
 		setAgents();
 		setResources();
-	}
-
-	private void setPlanners()
-	{
-		for (Team team : teams)
-		{
-			//TODO set correct planner for each team
-			team.setPlanner(new SummerAI(team, 0.9));	//TODO set aggressiveness back to ~0.5
-		}
 	}
 
 	private void setAgents() throws NotEnoughTilesFoundException
@@ -181,9 +199,45 @@ public class Scenario
 		return (this.getNextTeam(curTeam)!=null);
 	}
 
+	public int getRunCount()
+	{
+		return runCount;
+	}
+
 	public boolean hasWinner()
 	{
 		return Arrays.stream(teams).anyMatch(team -> team.hasWon());
+	}
+
+	public void finish()
+	{
+		this.runCount++;
+		this.close();
+		Simulation.sim.getLogger().logStats();
+	}
+
+	public void close()
+	{
+		if (Simulation.sim.getSimLoop()!=null)
+		{
+			Simulation.sim.getSimLoop().stop();	//if a Simloop is already running, stop it
+		}
+	}
+
+	/** Restarts Scenario, really only calling init().
+	 * finish() should have been called before restart(), to stop the SimLoop.
+	 */
+	public void restart()
+	{
+		try
+		{
+			init();
+		}
+		catch (NotEnoughTilesFoundException e)
+		{
+			e.printStackTrace();
+			System.out.println("This should be impossible, since the map doesn't change between runs.");
+		}
 	}
 
 	public Team getWinner()

@@ -8,6 +8,7 @@ import regopoulos.elias.scenario.Team;
  */
 public class WinterAI extends Planner
 {
+	private static final String NAME = "WinterAI";
 
 	public WinterAI(Team lnkTeam)
 	{
@@ -19,5 +20,11 @@ public class WinterAI extends Planner
 	{
 		//TODO
 		return null;
+	}
+
+	@Override
+	public String getPlannerName()
+	{
+		return WinterAI.NAME;
 	}
 }
