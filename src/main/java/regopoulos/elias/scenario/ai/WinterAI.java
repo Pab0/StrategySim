@@ -3,6 +3,8 @@ package regopoulos.elias.scenario.ai;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Team;
 
+import java.util.ArrayList;
+
 /**Winter-AI
  *
  */
@@ -16,9 +18,14 @@ public class WinterAI extends Planner
 	}
 
 	@Override
-	public Action getNextAction(Agent agent)
+	boolean isElligibleForAction(Agent agent, ActionType actionType)
 	{
-		//TODO
+		return true;
+	}
+
+	@Override
+	Action chooseBestAction(ArrayList<Action> possibleActions, Agent agent)
+	{
 		return null;
 	}
 

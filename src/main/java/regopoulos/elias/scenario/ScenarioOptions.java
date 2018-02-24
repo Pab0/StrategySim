@@ -10,11 +10,14 @@ import java.util.EnumMap;
  */
 public class ScenarioOptions
 {
-	public static final int DEFAULT_WOOD_GOAL = 5;
+	public static final int DEFAULT_WOOD_GOAL = 25;
 	public static final int DEFAULT_STONE_GOAL = 2;
 	public static final int DEFAULT_GOLD_GOAL = 0;
 
 	public static final int DEFAULT_VILLAGER_COUNT = 5;
+	public static final int DEFAULT_HUNTER_COUNT = 4;
+	public static final int DEFAULT_GUARD_COUNT = 2;
+	public static final int DEFAULT_KNIGHT_COUNT = 2;
 
 	private Map map;
 	private Team[] teams;

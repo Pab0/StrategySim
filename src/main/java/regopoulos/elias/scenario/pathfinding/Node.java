@@ -1,6 +1,7 @@
 package regopoulos.elias.scenario.pathfinding;
 
 import javafx.geometry.Dimension2D;
+import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -15,10 +16,10 @@ public class Node
 
 	int y,x;		//coordinates
 	private Node parent;	//previous Node
-	int gCost;		//accumulated pathfinding cost
-	int hCost;		//estimated cost to goal
+	private int gCost;		//accumulated pathfinding cost
+	private int hCost;		//estimated remaining cost to goal
 
-	Node(int y, int x)
+	private Node(int y, int x)
 	{
 		this.y = y;
 		this.x = x;
@@ -29,15 +30,25 @@ public class Node
 		this((int)dim.getHeight(), (int)dim.getWidth());
 	}
 
-	Node(int y, int x, Node parent)
+	private Node(int y, int x, Node parent)
 	{
 		this(y,x);
 		this.parent = parent;
-		this.gCost = this.parent.gCost+1;
-//		this.hCost = calcHCost();	//TODO
 	}
 
-	Node(Dimension2D dim, Node parent)
+	/**Calculates form G and H costs.
+	 * Should be called right after instantiation if Pathfinding is A*.
+ 	 * @param goal the pathfidning's goal.
+	 */
+	public void calcCosts(Node goal)
+	{
+		int parentGCost = this.parent==null?0:this.parent.gCost;	//parent doesn't exist for root nodes
+		this.gCost = parentGCost+1 + //each node is +1 removed from start compared to parent
+				Simulation.sim.getScenario().getNodeWeightSetter().getNodeWeight(y,x);
+		this.hCost = getHCost(goal);
+	}
+
+	private Node(Dimension2D dim, Node parent)
 	{
 		this((int)dim.getHeight(), (int)dim.getWidth(), parent);
 	}
@@ -60,6 +71,10 @@ public class Node
 		return path;
 	}
 
+	private int getHCost(Node goal)
+	{
+		return Math.abs(this.y-goal.y) + Math.abs(this.x-goal.x);
+	}
 
 	/**Returns overall cost.
 	 * Depending on the pathfinding mode (sweeping vs pathfinding),

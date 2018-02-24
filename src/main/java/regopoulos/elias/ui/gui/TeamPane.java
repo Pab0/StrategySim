@@ -62,7 +62,6 @@ public class TeamPane extends VBox implements Updateable
 	{
 		this.mapViewTeams = setMapViewTeams(Simulation.sim.getScenario().getTeams());
 		this.teamBox.setItems(FXCollections.observableArrayList(this.mapViewTeams));
-//		this.teamBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedTeam((MapViewTeam)newValue);});
 		this.teamBox.getSelectionModel().selectFirst();
 		update();
 	}
@@ -70,7 +69,6 @@ public class TeamPane extends VBox implements Updateable
 	void changeSelectedTeam()
 	{
 		this.agentBox.setItems((FXCollections.observableArrayList(Simulation.sim.getSimUI().getSelectedTeam().getAgents())));
-//		this.agentBox.valueProperty().addListener((observable, oldValue, newValue) -> {if (newValue!=null)Simulation.sim.getSimUI().setSelectedAgent((Agent)newValue);});
 		this.agentBox.getSelectionModel().selectFirst();
 	}
 
@@ -111,11 +109,12 @@ public class TeamPane extends VBox implements Updateable
 			this.plannerLabel.setText("");
 			return;
 		}
-		String str = "Position: ";
+		String str = "Action: " + "\n";
+		str += selectedAgent.getAction() + "\n\n";
+		str += "Path cost: " + ((selectedAgent.getAction()==null) ? 0 : selectedAgent.getAction().getPathCost() + "\n");
+		str += "Position: ";
 		str += (int)selectedAgent.pos.getWidth() + ",";
 		str += (int)selectedAgent.pos.getHeight() + "\n";
-		str += "Action: " + "\n";
-		str += selectedAgent.getAction() + "\n";
 		str += "Health: " + selectedAgent.getHP() + "/" + selectedAgent.getType().getMaxHP() + "\n";
 		str += "Attack: " + selectedAgent.getType().getAttack() + "\n";
 		str += "Defense:" + selectedAgent.getType().getDefense() + "\n";

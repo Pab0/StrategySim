@@ -61,8 +61,9 @@ public class PathfinderGoals
 		{
 			foundObjectGoal(TerrainType.UNKNOWN, node);
 		}
-		else if (type.equals(TerrainType.GRASS) &&														//The only interesting thing about grass are
-				Simulation.sim.getScenario().getAgentAtPos(node.y, node.x)!=null &&						//the agents on it -
+		else if (visibleMap[node.y][node.x] &&
+				type.equals(TerrainType.GRASS) &&														//The only interesting thing about grass
+				Simulation.sim.getScenario().getAgentAtPos(node.y, node.x)!=null &&						//are the agents on it -
 				!Simulation.sim.getScenario().getAgentAtPos(node.y, node.x).getTeam().equals(lnkTeam))	//enemy agents, to be precise
 		{
 			foundEnemy(node);

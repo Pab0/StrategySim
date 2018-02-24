@@ -88,6 +88,9 @@ public class OptionsStage extends Stage
 			this.agentNum.put(agentType,0);
 		}
 		this.agentNum.put(AgentType.VILLAGER, ScenarioOptions.DEFAULT_VILLAGER_COUNT);
+		this.agentNum.put(AgentType.HUNTER, ScenarioOptions.DEFAULT_HUNTER_COUNT);
+		this.agentNum.put(AgentType.GUARD, ScenarioOptions.DEFAULT_GUARD_COUNT);
+		this.agentNum.put(AgentType.KNIGHT, ScenarioOptions.DEFAULT_KNIGHT_COUNT);
 	}
 
 	private VBox populateOptionStage()

@@ -12,9 +12,10 @@ import java.util.Collections;
 
 public class Action
 {
-	Dimension2D poI;	//location of Point of Interest on map
+	private Dimension2D poI;		//location of Point of Interest on map
 	ActionType type;
-	ArrayList<Dimension2D> path; //calculated path from agent to goal
+	ArrayList<Dimension2D> path;	//calculated path from agent to goal
+	private int pathCost;			//Weighted cost of path
 
 	/* Since there's a 1:1 relation between ActionType and TerrainType,
 	 * we can infer the former based solely on the latter.
@@ -26,9 +27,7 @@ public class Action
 	public Action(Node node, TerrainType terrainType)
 	{
 		this.poI = node.getCoords();
-		this.path = node.getPath();
-		Collections.reverse(this.path);	//path order was initially from goal to agent
-		this.path.remove(0);	//first element is agent's position
+		this.setPath(node.getPath());
 		switch(terrainType)
 		{
 			case UNKNOWN:
@@ -64,6 +63,27 @@ public class Action
 	public ArrayList<Dimension2D> getPath()
 	{
 		return path;
+	}
+
+	/** Paths are sent in reversed, since they backtrack from goal (inclusive) to agent.
+	 * This method fixes the order and removes the agent's position.
+	 * @param path
+	 */
+	public void setPath(ArrayList<Dimension2D> path)
+	{
+		this.path = path;
+		Collections.reverse(this.path);	//path order was initially from goal to agent
+		this.path.remove(0);	//first element is agent's position
+	}
+
+	public void setPathCost(int pathCost)
+	{
+		this.pathCost = pathCost;
+	}
+
+	public int getPathCost()
+	{
+		return this.pathCost;
 	}
 
 	public ActionType getType()

@@ -1,5 +1,6 @@
 package regopoulos.elias.scenario.pathfinding;
 
+import javafx.geometry.Dimension2D;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.NotEnoughTilesFoundException;
 import regopoulos.elias.scenario.Team;
@@ -8,6 +9,7 @@ import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,63 @@ public class Pathfinder
 //			System.out.println("Not enough tiles found");
 		}
 		return this.goals;
+	}
+
+	/**A* implementation.
+	 * Finds shortest path from agent to goal,
+	 * using weighted nodes according to risk
+	 *
+	 * @param action
+	 * @return
+	 */
+	public ArrayList<Dimension2D> getWeightedPathToGoal(Agent lnkAgent, Action action)
+	{
+		this.closedSet.clear();
+		this.openSet.clear();
+		Node rootNode = new Node(lnkAgent.pos);
+		Node goalNode = new Node(action.getPoI());
+		ArrayList<Node> neighbours = new ArrayList<>();
+		rootNode.calcCosts(goalNode);
+		this.openSet.add(rootNode);						//adding agent's current position to openSet
+		this.openSet.addAll(rootNode.getNeighbours());	//also adding all immediate neighbours
+		boolean isFinished = false;
+		while (!isFinished)
+		{
+			//Checking if goal is reached
+			Node closestNode = openSet.stream().
+					min(Comparator.comparingInt(node -> node.getFCost(false))).get();
+
+			if (closestNode.equals(goalNode))
+			{
+				goalNode = closestNode;
+				isFinished = true;
+				break;
+			}
+			else
+			{
+				//Move examined node to closedSet
+				this.openSet.remove(closestNode);
+				this.closedSet.add(closestNode);
+
+				//Add closestNode's neighbours to openSet, if closestNode is eligible for neighbours
+				if (NodeChecker.nodeIsTraversable(closestNode, lnkAgent.getTeam().getVisibleMap()) &&
+							NodeChecker.isNotOccupied(closestNode, lnkAgent.getTeam().getVisibleMap()))
+				{
+					neighbours = closestNode.getNeighbours();
+				}
+
+				for (Node neighbour : neighbours)
+				{
+					neighbour.calcCosts(goalNode);
+				}
+				openSet.addAll(neighbours.stream().distinct().
+						filter(node -> !openSet.contains(node)).
+						filter(node -> !closedSet.contains(node)).
+						collect(Collectors.toList()));
+			}
+		}
+		action.setPathCost(goalNode.getFCost(false));
+		return goalNode.getPath();
 	}
 
 	/** Only used for setting agen't initial position

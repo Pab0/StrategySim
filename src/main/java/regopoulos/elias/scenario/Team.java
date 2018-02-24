@@ -2,14 +2,13 @@ package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
 import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.scenario.ai.Planner;
-import regopoulos.elias.scenario.ai.SummerAI;
 import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +16,7 @@ public class Team implements MapViewTeam
 {
 	private static final String ICON_FOLDER = "icons/teams/";	//for the teamSpots
 
-	private boolean[][] visibleMap;		//mask of visible portion of scenario's map
+	private boolean[][] visibleMap;		//mask of visible portion of scenario's mapprivate HashMap<Dimension2D, Integer> nodeRisks;
 	private Planner planner;
 	private List<Dimension2D> dropOffSites;
 	private ArrayList<Agent> agents;
@@ -134,10 +133,16 @@ public class Team implements MapViewTeam
 	{
 		this.planner = planner;
 	}
+
 	@Override
 	public boolean[][] getVisibleMap()
 	{
 		return this.visibleMap;
+	}
+
+	public boolean canSee(Dimension2D dim)
+	{
+		return this.visibleMap[(int)dim.getHeight()][(int)dim.getWidth()];
 	}
 
 	/**Returns tile as seen by team, aka true tile or unknown */

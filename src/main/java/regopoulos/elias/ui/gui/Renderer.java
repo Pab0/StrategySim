@@ -5,16 +5,17 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Map;
 import regopoulos.elias.scenario.Team;
 import regopoulos.elias.scenario.TerrainType;
+import regopoulos.elias.scenario.pathfinding.NodeWeightSetter;
 import regopoulos.elias.scenario.pathfinding.PathfindingIcons;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class Renderer
@@ -156,6 +157,7 @@ public class Renderer
 			{
 				renderPath(selAgent.getAction().getPath());
 				renderGoal(selAgent.getAction().getPoI());
+				renderRisk();
 			}
 		}
 	}
@@ -179,6 +181,24 @@ public class Renderer
 		renderMapItem(this.pathfindingIcons.getGoalIcon(), (int)goal.getHeight(), (int)goal.getWidth());
 	}
 
+	private void renderRisk()
+	{
+		Team team = (Team)Simulation.sim.getSimUI().getSelectedTeam();
+		if (team!=null)
+		{
+			Agent selAgent = Simulation.sim.getSimUI().getSelectedAgent();
+			Simulation.sim.getScenario().getNodeWeightSetter().update(selAgent);	//Update risk map of world
+			HashMap<Dimension2D, Integer> risks = selAgent.getNodeRisks();
+			for (Dimension2D dim : risks.keySet())
+			{
+				renderMapItem(this.pathfindingIcons.getRiskIcon(risks.get(dim)),dim);
+				gc.strokeText(risks.get(dim)+"",	//TODO remove this, only for debugging
+						((double)dim.getWidth()+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
+						((double)dim.getHeight()+tileOffset.getY()+1)*TILE_WIDTH + subTileOffset.getY());
+			}
+		}
+	}
+
 	/**Renders item with position y,x on map.
 	 * Automatically shifts render position according to camera offset.
 	 */
@@ -188,6 +208,12 @@ public class Renderer
 				(x+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
 				(y+tileOffset.getY())*TILE_WIDTH + subTileOffset.getY(),
 				TILE_WIDTH,TILE_WIDTH);
+	}
+
+	//convenience method
+	private void renderMapItem(Image image, Dimension2D dim)
+	{
+		renderMapItem(image, (int)dim.getHeight(), (int)dim.getWidth());
 	}
 
 	void render(boolean splashScreen)

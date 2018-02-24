@@ -38,39 +38,17 @@ public class SummerAI extends Planner
 	}
 
 	@Override
-	public Action getNextAction(Agent agent)
-	{
-		ArrayList<Action> possibleActions = getPossibleActions(agent);
-		agent.setPossibleActions(possibleActions);
-		return chooseBestAction(possibleActions, agent);
-	}
-
-	/**Returns all possible actions for this agent */
-	private ArrayList<Action> getPossibleActions(Agent agent)
-	{
-		PathfinderGoals pfg = new PathfinderGoals();
-		for (ActionType actionType : ActionType.values())
-		{
-			if (isElligibleForAction(agent, actionType))
-			{
-				pfg.addGoal(actionType, agent.getTeam());
-			}
-		}
-		Pathfinder pathfinder = Simulation.sim.getScenario().getPathfinder();
-		return pathfinder.getPossibleActions(pfg, agent).toArrayList();
-	}
-
 	/**All SummerAI agents are free to do all actions,
 	 * so this always returns true.
 	 */
-	//TODO: SpringAI has terrainType.canBeDoneBy(agent.getType()) instead
-	public boolean isElligibleForAction(Agent agent, ActionType type)
+	boolean isElligibleForAction(Agent agent, ActionType type)
 	{
 		return true;
 	}
 
+	@Override
 	/**Chooses best, according to AI's criteria, action among possible ones*/
-	private Action chooseBestAction(ArrayList<Action> possibleActions, Agent lnkAgent)
+	Action chooseBestAction(ArrayList<Action> possibleActions, Agent lnkAgent)
 	{
 		Action bestAction = null;
 

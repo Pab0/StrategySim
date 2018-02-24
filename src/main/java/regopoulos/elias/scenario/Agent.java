@@ -9,6 +9,7 @@ import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Agent
@@ -25,6 +26,7 @@ public class Agent
 	public Dimension2D pos;	//agent's current position
 	private ArrayList<Action> possibleActions;	//list of actions to be examined, one of which will be chosen.
 	private Action action;	//action to be carried out by agent
+	private HashMap<Dimension2D, Integer> nodeRisks;
 
 	Agent(AgentType type, Team lnkTeam, int typeID)
 	{
@@ -99,6 +101,17 @@ public class Agent
 	{
 		return action;
 	}
+
+	public void setNodeRisks(HashMap<Dimension2D, Integer> nodeRisks)
+	{
+		this.nodeRisks = nodeRisks;
+	}
+
+	public HashMap<Dimension2D, Integer> getNodeRisks()
+	{
+		return nodeRisks;
+	}
+
 
 	/**Adds neighbouring tiles to team's visible map */
 	private void lookAround()
@@ -200,10 +213,10 @@ public class Agent
 	public void update() throws BadVisibilityException
 	{
 		lookAround();
-		//Plan new Action
+		//Determine best possible action
 		this.action = lnkTeam.getPlanner().getNextAction(this);
 		Simulation.sim.log(this + " chose action " + action);
-		//Ask Pathfinder for closest adjacent goal, and path towards it
+		//Ask Pathfinder for closest reachable goal, and path towards it
 		//move on path, or carry out action (can't do both in same round)
 		moveOrDo();
 	}

@@ -4,6 +4,7 @@ import javafx.geometry.Dimension2D;
 import regopoulos.elias.scenario.ai.Planner;
 import regopoulos.elias.scenario.ai.SpringAI;
 import regopoulos.elias.scenario.ai.SummerAI;
+import regopoulos.elias.scenario.pathfinding.NodeWeightSetter;
 import regopoulos.elias.scenario.pathfinding.Pathfinder;
 import regopoulos.elias.sim.SimLoop;
 import regopoulos.elias.sim.Simulation;
@@ -17,6 +18,7 @@ public class Scenario
 	private ScenarioOptions scenarioOptions;
 	private Map map;
 	private Pathfinder pathfinder;
+	private NodeWeightSetter nodeWeightSetter;
 	private Team[] teams;
 	private GaiaTeam gaia;
 	private EnumMap<TerrainType, Integer> resourceGoals;
@@ -47,12 +49,13 @@ public class Scenario
 		scenarioOptions.setOptionsToScenario(this);
 		this.agentPos = new HashMap<>();
 		this.setPathfinder();
+		this.setNodeWeightSetter();
 		this.getMap().setDropOffSites();
 		this.initTeams();
 		Simulation.sim.getSimUI().initOnSimLoad();
 	}
 
-	HashMap<Dimension2D, Agent> getPositionsWithAgents()
+	public HashMap<Dimension2D, Agent> getPositionsWithAgents()
 	{
 		return agentPos;
 	}
@@ -75,6 +78,16 @@ public class Scenario
 	public Pathfinder getPathfinder()
 	{
 		return pathfinder;
+	}
+
+	private void setNodeWeightSetter()
+	{
+		this.nodeWeightSetter = new NodeWeightSetter();
+	}
+
+	public NodeWeightSetter getNodeWeightSetter()
+	{
+		return nodeWeightSetter;
 	}
 
 	void setTeams(Team[] teams)

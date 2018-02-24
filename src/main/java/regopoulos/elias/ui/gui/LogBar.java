@@ -8,7 +8,7 @@ public class LogBar extends VBox implements Updateable, LogOutput
 {
 	TextArea logArea;
 
-	protected LogBar(int height)
+	LogBar(int height)
 	{
 		logArea = new TextArea();
 		logArea.setEditable(false);
@@ -26,7 +26,7 @@ public class LogBar extends VBox implements Updateable, LogOutput
 	@Override
 	public void initOnSimLoad()
 	{
-		logArea.clear();
+
 	}
 
 	@Override

@@ -2,6 +2,9 @@ package regopoulos.elias.scenario.ai;
 
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Team;
+import regopoulos.elias.scenario.pathfinding.Pathfinder;
+import regopoulos.elias.scenario.pathfinding.PathfinderGoals;
+import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
 
@@ -27,7 +30,42 @@ public abstract class Planner
 	{
 		this.lnkTeam = lnkTeam;
 	}
-	public abstract Action getNextAction(Agent agent);
+	public Action getNextAction(Agent agent)
+	{
+		ArrayList<Action> possibleActions = getPossibleActions(agent);
+		calcPaths(possibleActions, agent);
+		agent.setPossibleActions(possibleActions);
+		return chooseBestAction(possibleActions, agent);
+	}
+
+	/**Returns all possible actions for this agent */
+	private ArrayList<Action> getPossibleActions(Agent agent)
+	{
+		PathfinderGoals pfg = new PathfinderGoals();
+		for (ActionType actionType : ActionType.values())
+		{
+			if (isElligibleForAction(agent, actionType))
+			{
+				pfg.addGoal(actionType, agent.getTeam());
+			}
+		}
+		Pathfinder pathfinder = Simulation.sim.getScenario().getPathfinder();
+		return pathfinder.getPossibleActions(pfg, agent).toArrayList();
+	}
+
+	/**Uses A* and weighted pathfinding to find a short yet safe path to goal. */
+	private void calcPaths(ArrayList<Action> possibleActions, Agent agent)
+	{
+		Simulation.sim.getScenario().getNodeWeightSetter().update(agent);	//Update risk map of world
+		for (Action action : possibleActions)
+		{
+			action.setPath(Simulation.sim.getScenario().getPathfinder().getWeightedPathToGoal(agent, action));
+		}
+	}
+
+	abstract boolean isElligibleForAction(Agent agent, ActionType actionType);
+
+	abstract Action chooseBestAction(ArrayList<Action> possibleActions, Agent agent);
 
 	/**Creates and returns Planner implementation named `name`
 	 *
