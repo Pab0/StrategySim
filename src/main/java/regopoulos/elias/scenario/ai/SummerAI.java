@@ -51,6 +51,7 @@ public class SummerAI extends Planner
 	Action chooseBestAction(ArrayList<Action> possibleActions, Agent lnkAgent)
 	{
 		Action bestAction = null;
+		random.setSeed(lnkAgent.hashCode());	//set random to specific value to avoid "flickering" between two actions (attack and the alternative, if attack isn't selected)
 
 		//if randomDouble<aggressiveness attack closest enemy (if available)
 		if (random.nextDouble()<aggressiveness && possibleActions.stream().anyMatch(action -> action.type==ActionType.ATTACK))

@@ -9,7 +9,6 @@ import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Map;
 import regopoulos.elias.scenario.Team;
 import regopoulos.elias.scenario.TerrainType;
-import regopoulos.elias.scenario.pathfinding.NodeWeightSetter;
 import regopoulos.elias.scenario.pathfinding.PathfindingIcons;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
@@ -22,7 +21,7 @@ public class Renderer
 {
 	static final short TILE_WIDTH = 30;
 
-	public Point2D mapTileCapacity;	//how many tiles fit onto the canvas
+	Point2D mapTileCapacity;	//how many tiles fit onto the canvas
 	private Point2D tileOffset;			//how many tiles one should shift
 	private Point2D subTileOffset;		//how much tiles are shifted
 
@@ -153,10 +152,14 @@ public class Renderer
 					(x+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
 					(y+tileOffset.getY())*TILE_WIDTH + subTileOffset.getY(),
 					TILE_WIDTH,TILE_WIDTH);
-			if (selAgent.getAction()!=null)
+			if (selAgent.isAlive())
 			{
-				renderPath(selAgent.getAction().getPath());
-				renderGoal(selAgent.getAction().getPoI());
+				selAgent.setAction(selAgent.getTeam().getPlanner().getNextAction(selAgent));
+				if (selAgent.getAction()!=null)
+				{
+					renderPath(selAgent.getAction().getPath());
+					renderGoal(selAgent.getAction().getPoI());
+				}
 				renderRisk();
 			}
 		}
@@ -187,14 +190,13 @@ public class Renderer
 		if (team!=null)
 		{
 			Agent selAgent = Simulation.sim.getSimUI().getSelectedAgent();
-			Simulation.sim.getScenario().getNodeWeightSetter().update(selAgent);	//Update risk map of world
 			HashMap<Dimension2D, Integer> risks = selAgent.getNodeRisks();
 			for (Dimension2D dim : risks.keySet())
 			{
 				renderMapItem(this.pathfindingIcons.getRiskIcon(risks.get(dim)),dim);
 				gc.strokeText(risks.get(dim)+"",	//TODO remove this, only for debugging
-						((double)dim.getWidth()+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
-						((double)dim.getHeight()+tileOffset.getY()+1)*TILE_WIDTH + subTileOffset.getY());
+						(dim.getWidth()+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
+						(dim.getHeight()+tileOffset.getY()+1)*TILE_WIDTH + subTileOffset.getY());
 			}
 		}
 	}

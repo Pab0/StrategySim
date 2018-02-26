@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**Main pathfinding class.
- * Implements A*. //TODO
+ * Implements A*.
  * Two modi of operation:
  * a) Finds path from A to B
  * b) Sweeps area from point A until XYZ objects are found, as indicated in the PathfinderGoals object.
@@ -24,25 +24,23 @@ public class Pathfinder
 {
 	private static final int MAX_CLOSED_SET = 1_000;	//max size of closed set, before giving up searching for goals
 
-	List<Node> closedSet, openSet;
+	private List<Node> closedSet, openSet;
 	private PathfinderGoals goals;
 
 	public Pathfinder()
 	{
-		this.closedSet = new ArrayList<Node>();
-		this.openSet = new ArrayList<Node>();
+		this.closedSet = new ArrayList<>();
+		this.openSet = new ArrayList<>();
 		this.goals = new PathfinderGoals();
 	}
 
-	public void setPathfinderGoals(PathfinderGoals pathfinderGoals)
+	private void setPathfinderGoals(PathfinderGoals pathfinderGoals)
 	{
 		this.goals = pathfinderGoals;
 	}
 
-	/**Returns all possible Actions for this agent
-	 *
-	 * @param lnkAgent
-	 * @return
+	/**
+	 * @return All possible Actions for this agent
 	 */
 	public PathfinderGoals getPossibleActions(PathfinderGoals pathfinderGoals, Agent lnkAgent)
 	{
@@ -66,15 +64,14 @@ public class Pathfinder
 	 * Finds shortest path from agent to goal,
 	 * using weighted nodes according to risk
 	 *
-	 * @param action
-	 * @return
+	 * @param action The goal pathing to.
 	 */
 	public ArrayList<Dimension2D> getWeightedPathToGoal(Agent lnkAgent, Action action)
 	{
 		this.closedSet.clear();
 		this.openSet.clear();
 		Node rootNode = new Node(lnkAgent.pos);
-		Node goalNode = new Node(action.getPoI());
+		Node goalNode = action.getNode();
 		ArrayList<Node> neighbours = new ArrayList<>();
 		rootNode.calcCosts(goalNode);
 		this.openSet.add(rootNode);						//adding agent's current position to openSet
@@ -115,7 +112,7 @@ public class Pathfinder
 						collect(Collectors.toList()));
 			}
 		}
-		action.setPathCost(goalNode.getFCost(false));
+		action.setPathCost(goalNode.getFCost(true));
 		return goalNode.getPath();
 	}
 
@@ -145,7 +142,6 @@ public class Pathfinder
 	 * @param ignoreOccupants Whether the sweep should treat occupied tiles as obstacles everywhere,
 	 *                         or only in the final destination (ignoring path-blocking agents).
 	 *                        Used for setting the initial positions.
-	 * @return
 	 */
 	private void sweepForGoals(boolean[][] visibleMap, Team lnkTeam, boolean ignoreOccupants) throws NotEnoughTilesFoundException
 	{
@@ -172,7 +168,7 @@ public class Pathfinder
 			}
 
 			//Adding elligible neighbouring tiles for next sweep
-			ArrayList<Node> neighbours = new ArrayList<Node>();	//basically the (superset of the) new openSet
+			ArrayList<Node> neighbours = new ArrayList<>();	//basically the (superset of the) new openSet
 			closedSet.addAll(openSet);
 			openSet = openSet.stream().
 					filter(node -> NodeChecker.nodeIsTraversable(node, visibleMap)).

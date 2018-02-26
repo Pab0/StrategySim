@@ -61,9 +61,9 @@ public class Map
 		return this.map[y][x].getTerrainType();
 	}
 
-	public Tile getTileAt(Dimension2D dim)
+	public Tile getTileAt(int y, int x)
 	{
-		return this.map[(int)dim.getHeight()][(int)dim.getWidth()];
+		return this.map[y][x];
 	}
 
 	public ArrayList<TerrainType> getTeamsInMap()

@@ -12,7 +12,7 @@ import java.util.Collections;
 
 public class Action
 {
-	private Dimension2D poI;		//location of Point of Interest on map
+	private Node node;			//location of Point of Interest on map
 	ActionType type;
 	ArrayList<Dimension2D> path;	//calculated path from agent to goal
 	private int pathCost;			//Weighted cost of path
@@ -26,7 +26,7 @@ public class Action
 	 */
 	public Action(Node node, TerrainType terrainType)
 	{
-		this.poI = node.getCoords();
+		this.node = node;
 		this.setPath(node.getPath());
 		switch(terrainType)
 		{
@@ -52,12 +52,16 @@ public class Action
 				this.type = ActionType.DROP_OFF;
 				break;
 		}
-		//TODO: Path should already be set by pathfinder - actually no, proper pathfinding must still happen
 	}
 
 	public Dimension2D getPoI()
 	{
-		return poI;
+		return node.getCoords();
+	}
+
+	public Node getNode()
+	{
+		return node;
 	}
 
 	public ArrayList<Dimension2D> getPath()
@@ -96,7 +100,7 @@ public class Action
 		switch (this.getType())
 		{
 			case ATTACK:
-				lnkAgent.attack(Simulation.sim.getScenario().getAgentAtPos(this.poI));
+				lnkAgent.attack(Simulation.sim.getScenario().getAgentAtPos(this.node.getCoords()));
 				break;
 			case DROP_OFF:
 				lnkAgent.dropOffResource();
@@ -104,7 +108,7 @@ public class Action
 			case GATHER_WOOD:
 			case GATHER_STONE:
 			case GATHER_GOLD:
-				lnkAgent.gatherResource(Simulation.sim.getScenario().getMap().getTileAt(this.poI));
+				lnkAgent.gatherResource(Simulation.sim.getScenario().getMap().getTileAt(this.node.getY(), this.node.getX()));
 				break;
 			case EXPLORE:
 				//adjacent tiles should always be visible,
@@ -113,13 +117,12 @@ public class Action
 			default:
 				lnkAgent.stayPut();
 				break;
-
 		}
 	}
 
 	@Override
 	public String toString()
 	{
-		return this.type.description + " @ " + (int)this.poI.getWidth() + "," + (int)this.poI.getHeight();
+		return this.type.description + " @ " + this.node.getX() + "," + this.node.getY();
 	}
 }

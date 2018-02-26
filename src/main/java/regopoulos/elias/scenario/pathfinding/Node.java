@@ -40,7 +40,7 @@ public class Node
 	 * Should be called right after instantiation if Pathfinding is A*.
  	 * @param goal the pathfidning's goal.
 	 */
-	public void calcCosts(Node goal)
+	void calcCosts(Node goal)
 	{
 		int parentGCost = this.parent==null?0:this.parent.gCost;	//parent doesn't exist for root nodes
 		this.gCost = parentGCost+1 + //each node is +1 removed from start compared to parent
@@ -56,6 +56,16 @@ public class Node
 	public Dimension2D getCoords()
 	{
 		return new Dimension2D(x,y);
+	}
+
+	public int getY()
+	{
+		return y;
+	}
+
+	public int getX()
+	{
+		return this.x;
 	}
 
 	public ArrayList<Dimension2D> getPath()
@@ -76,21 +86,20 @@ public class Node
 		return Math.abs(this.y-goal.y) + Math.abs(this.x-goal.x);
 	}
 
-	/**Returns overall cost.
+	/**
 	 * Depending on the pathfinding mode (sweeping vs pathfinding),
 	 * gCost or gCost+hCost are returned, respectively.
 	 *
 	 * @param overallCost true for pathfinding, false for sweeping
-	 * @return
+	 * @return Overall cost.
 	 */
-	int getFCost(boolean overallCost)
+	public int getFCost(boolean overallCost)
 	{
 		return overallCost?gCost:(gCost+hCost);
 	}
 
-	/**Returns all cardinal neighbours of node.
-	 *
-	 * @return
+	/**
+	 * @return All cardinal neighbours of node.
 	 */
 	ArrayList<Node> getNeighbours()
 	{

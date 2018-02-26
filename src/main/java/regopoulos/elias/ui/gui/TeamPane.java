@@ -111,7 +111,7 @@ public class TeamPane extends VBox implements Updateable
 		}
 		String str = "Action: " + "\n";
 		str += selectedAgent.getAction() + "\n\n";
-		str += "Path cost: " + ((selectedAgent.getAction()==null) ? 0 : selectedAgent.getAction().getPathCost() + "\n");
+		str += "Path cost: " + ((selectedAgent.getAction()==null) ? 0 : selectedAgent.getAction().getPathCost()) + "\n";
 		str += "Position: ";
 		str += (int)selectedAgent.pos.getWidth() + ",";
 		str += (int)selectedAgent.pos.getHeight() + "\n";

@@ -2,9 +2,7 @@ package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
 import regopoulos.elias.scenario.ai.Action;
-import regopoulos.elias.scenario.ai.ActionType;
 import regopoulos.elias.scenario.ai.BadVisibilityException;
-import regopoulos.elias.scenario.pathfinding.Node;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
@@ -62,7 +60,7 @@ public class Agent
 		return resouceCarrying;
 	}
 
-	void setPos(int y, int x)
+	private void setPos(int y, int x)
 	{
 		Simulation.sim.getScenario().getPositionsWithAgents().remove(pos);
 		this.pos = new Dimension2D(x,y);
@@ -100,6 +98,11 @@ public class Agent
 	public Action getAction()
 	{
 		return action;
+	}
+
+	public void setAction(Action action)
+	{
+		this.action = action;
 	}
 
 	public void setNodeRisks(HashMap<Dimension2D, Integer> nodeRisks)
