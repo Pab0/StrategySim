@@ -12,7 +12,7 @@ public class MenuBar extends ToolBar implements Updateable
 {
 	private Button newBtn, loadBtn, saveBtn, pauseBtn, fasterBtn, slowerBtn, agentBtn, teamBtn, roundBtn;
 	private Label roundIndicatorLabel, simSpeedLabel;
-	protected MenuBar(int width, int height)
+	MenuBar(int width, int height)
 	{
 		createButtons();
 
@@ -20,7 +20,6 @@ public class MenuBar extends ToolBar implements Updateable
 		this.simSpeedLabel = new Label("Sim tick frequency");
 
 		this.setPrefSize(width,height);
-		//TODO add icons to labels (As resources)
 		this.setOrientation(Orientation.HORIZONTAL);
 		this.getItems().add(newBtn);
 		this.getItems().add(loadBtn);

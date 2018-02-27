@@ -4,15 +4,14 @@ import regopoulos.elias.scenario.ai.Planner;
 
 import java.util.EnumMap;
 
-//TODO: Refactoring: Move some of the calculations in OptionsStage in here
 /**Holds values of options for current scenario.
  * Used for restarting scenarios.
  */
 public class ScenarioOptions
 {
 	public static final int DEFAULT_WOOD_GOAL = 25;
-	public static final int DEFAULT_STONE_GOAL = 2;
-	public static final int DEFAULT_GOLD_GOAL = 0;
+	public static final int DEFAULT_STONE_GOAL = 10;
+	public static final int DEFAULT_GOLD_GOAL = 10;
 
 	public static final int DEFAULT_VILLAGER_COUNT = 5;
 	public static final int DEFAULT_HUNTER_COUNT = 4;
@@ -45,7 +44,7 @@ public class ScenarioOptions
 		this.teams = teams;
 	}
 
-	public Team[] getTeams()
+	Team[] getTeams()
 	{
 		return teams;
 	}

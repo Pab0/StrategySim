@@ -38,12 +38,13 @@ public class Node
 
 	/**Calculates form G and H costs.
 	 * Should be called right after instantiation if Pathfinding is A*.
- 	 * @param goal the pathfidning's goal.
+ 	 * @param goal the pathfinding's goal.
 	 */
 	void calcCosts(Node goal)
 	{
 		int parentGCost = this.parent==null?0:this.parent.gCost;	//parent doesn't exist for root nodes
-		this.gCost = parentGCost+1 + //each node is +1 removed from start compared to parent
+		this.gCost = parentGCost +
+				(this.parent==null ? 0 : 1) + 			//each non-starting node is +1 removed from start compared to parent
 				Simulation.sim.getScenario().getNodeWeightSetter().getNodeWeight(y,x);
 		this.hCost = getHCost(goal);
 	}
@@ -68,9 +69,14 @@ public class Node
 		return this.x;
 	}
 
+	public Node getParent()
+	{
+		return parent;
+	}
+
 	public ArrayList<Dimension2D> getPath()
 	{
-		ArrayList<Dimension2D> path = new ArrayList<Dimension2D>();
+		ArrayList<Dimension2D> path = new ArrayList<>();
 		Node curNode = this;
 		path.add(curNode.getCoords());
 		while (curNode.parent!=null)
@@ -86,21 +92,17 @@ public class Node
 		return Math.abs(this.y-goal.y) + Math.abs(this.x-goal.x);
 	}
 
-	/**
-	 * Depending on the pathfinding mode (sweeping vs pathfinding),
-	 * gCost or gCost+hCost are returned, respectively.
-	 *
-	 * @param overallCost true for pathfinding, false for sweeping
-	 * @return Overall cost.
-	 */
-	public int getFCost(boolean overallCost)
+	public int getGCost()
 	{
-		return overallCost?gCost:(gCost+hCost);
+		return gCost;
 	}
 
-	/**
-	 * @return All cardinal neighbours of node.
-	 */
+	public int getFCost()
+	{
+		return gCost+hCost;
+	}
+
+	/** @return All cardinal neighbours of node. */
 	ArrayList<Node> getNeighbours()
 	{
 		return TileChecker.getNeighbours(y,x).

@@ -20,7 +20,6 @@ import java.util.Properties;
 
 public class SimWindow extends Application implements SimulationUI
 {
-	//TODO: Move all properties to .properties file
 	private static final int MENU_HEIGHT= 30;
 	private static double CANVAS_WIDTH_SHARE;
 	private static double CANVAS_HEIGHT_SHARE;

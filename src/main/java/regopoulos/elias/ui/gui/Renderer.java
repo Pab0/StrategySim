@@ -194,9 +194,12 @@ public class Renderer
 			for (Dimension2D dim : risks.keySet())
 			{
 				renderMapItem(this.pathfindingIcons.getRiskIcon(risks.get(dim)),dim);
-				gc.strokeText(risks.get(dim)+"",	//TODO remove this, only for debugging
+
+				/* For debugging purposes:
+				gc.strokeText(risks.get(dim)+"",
 						(dim.getWidth()+tileOffset.getX())*TILE_WIDTH + subTileOffset.getX(),
 						(dim.getHeight()+tileOffset.getY()+1)*TILE_WIDTH + subTileOffset.getY());
+						*/
 			}
 		}
 	}
@@ -234,7 +237,9 @@ public class Renderer
 	{
 		gc.setFill(Color.WHITE);
 		gc.strokeRect(0,0,SimWindow.WINDOW_WIDTH*0.7,SimWindow.WINDOW_HEIGHT*0.7);
-		gc.strokeText("Hello sim world", 100, 100);
+		gc.strokeText("Welcome to the Strategy Simulator. \n" +
+				"Click on 'New' to select a map and set the scenario options.",
+				100, 100);
 	}
 
 	void setCamera(Camera camera)

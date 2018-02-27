@@ -72,22 +72,27 @@ public class Pathfinder
 		this.openSet.clear();
 		Node rootNode = new Node(lnkAgent.pos);
 		Node goalNode = action.getNode();
-		ArrayList<Node> neighbours = new ArrayList<>();
 		rootNode.calcCosts(goalNode);
 		this.openSet.add(rootNode);						//adding agent's current position to openSet
 		this.openSet.addAll(rootNode.getNeighbours());	//also adding all immediate neighbours
+		for (Node node : this.openSet)
+		{
+			node.calcCosts(goalNode);
+		}
+
+		ArrayList<Node> neighbours = new ArrayList<>();
 		boolean isFinished = false;
+		Node closestNode;
 		while (!isFinished)
 		{
 			//Checking if goal is reached
-			Node closestNode = openSet.stream().
-					min(Comparator.comparingInt(node -> node.getFCost(false))).get();
+			closestNode = openSet.stream().
+					min(Comparator.comparingInt(Node::getFCost)).get();
 
 			if (closestNode.equals(goalNode))
 			{
-				goalNode = closestNode;
+				action.setNode(closestNode);
 				isFinished = true;
-				break;
 			}
 			else
 			{
@@ -112,8 +117,8 @@ public class Pathfinder
 						collect(Collectors.toList()));
 			}
 		}
-		action.setPathCost(goalNode.getFCost(true));
-		return goalNode.getPath();
+		action.setPathCost();
+		return action.getNode().getPath();
 	}
 
 	/** Only used for setting agen't initial position

@@ -26,8 +26,7 @@ public class Action
 	 */
 	public Action(Node node, TerrainType terrainType)
 	{
-		this.node = node;
-		this.setPath(node.getPath());
+		setNode(node);
 		switch(terrainType)
 		{
 			case UNKNOWN:
@@ -64,6 +63,12 @@ public class Action
 		return node;
 	}
 
+	public void setNode(Node node)
+	{
+		this.node = node;
+		this.setPath(node.getPath());
+	}
+
 	public ArrayList<Dimension2D> getPath()
 	{
 		return path;
@@ -80,9 +85,9 @@ public class Action
 		this.path.remove(0);	//first element is agent's position
 	}
 
-	public void setPathCost(int pathCost)
+	public void setPathCost()
 	{
-		this.pathCost = pathCost;
+		this.pathCost = this.node.getParent().getGCost();	//Gets cost of path from agent to goal node (exclusive)
 	}
 
 	public int getPathCost()

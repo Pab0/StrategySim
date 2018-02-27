@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class NodeWeightSetter
 {
-	private HashMap<Dimension2D, Integer> nodeRisks;	//0 if no enemies nearby //TODO: Let nodeRisks fan out
+	private HashMap<Dimension2D, Integer> nodeRisks;	//0 if no enemies nearby
 	private List<Agent> knownEnemies;
 	private HashMap<AgentType,Integer> risk;	//amount of risk (=damage received) from each enemy agent type
 
@@ -27,10 +27,7 @@ public class NodeWeightSetter
 		this.risk = new HashMap<>();
 	}
 
-	/**Gets called before each agent's pathfinding.
-	 *
-	 * @param curAgent
-	 */
+	/**Gets called before each agent's pathfinding.	 */
 	public void update(Agent curAgent)
 	{
 		calcRisks(curAgent);
@@ -51,7 +48,7 @@ public class NodeWeightSetter
 	private void setKnownEnemies(Team curTeam)
 	{
 		this.knownEnemies = Simulation.sim.getScenario().getPositionsWithAgents().values().stream().
-				filter(agent -> agent.isAlive()).					//Living agents
+				filter(Agent::isAlive).					//Living agents
 				filter(agent -> curTeam.canSee(agent.pos)).			//that are visible
 				filter(agent -> !agent.getTeam().equals(curTeam)).	//and enemies
 				collect(Collectors.toList());
@@ -76,13 +73,13 @@ public class NodeWeightSetter
 
 	}
 
-	public int getNodeWeight(Dimension2D dim)
+	private int getNodeWeight(Dimension2D dim)
 	{
 		return (nodeRisks.get(dim)==null)?0: nodeRisks.get(dim);
 	}
 
 	//convenience method
-	public int getNodeWeight(int y, int x)
+	int getNodeWeight(int y, int x)
 	{
 		return getNodeWeight(new Dimension2D(x,y));
 	}

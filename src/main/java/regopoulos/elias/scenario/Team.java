@@ -197,7 +197,7 @@ public class Team implements MapViewTeam
 
 	public void win()
 	{
-		Simulation.sim.log(this + "has won.");
+		Simulation.sim.log(this + " has won.");
 	}
 
 	@Override

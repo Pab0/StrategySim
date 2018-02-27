@@ -23,7 +23,7 @@ import java.util.ArrayList;
 public abstract class Planner
 {
 	public static final String DEFAULT_AI = "SummerAI";
-	//TODO: Add methods, implement Spring-, Summer-, AutumnAI- and Winter-AI
+	//TODO: Implement Spring-, Summer-, AutumnAI- and Winter-AI
 	Team lnkTeam;
 
 	public Planner(Team lnkTeam)
