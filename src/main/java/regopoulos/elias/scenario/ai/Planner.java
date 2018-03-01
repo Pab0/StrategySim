@@ -23,7 +23,6 @@ import java.util.ArrayList;
 public abstract class Planner
 {
 	public static final String DEFAULT_AI = "SummerAI";
-	//TODO: Implement Spring-, Summer-, AutumnAI- and Winter-AI
 	Team lnkTeam;
 
 	public Planner(Team lnkTeam)
@@ -77,13 +76,18 @@ public abstract class Planner
 		Planner planner = null;
 		switch (name)
 		{
-			case "SummerAI":
+			case SummerAI.NAME:
 				planner = new SummerAI(lnkTeam);
 				break;
-			case "SpringAI":
+			case SpringAI.NAME:
 				planner = new SpringAI(lnkTeam);
 				break;
-				//TODO
+			case WinterAI.NAME:
+				planner = new WinterAI(lnkTeam);
+				break;
+			case AutumnAI.NAME:
+				planner = new AutumnAI(lnkTeam);
+				break;
 		}
 		return planner;
 	}
@@ -93,7 +97,8 @@ public abstract class Planner
 		ArrayList<String> plannerTypes = new ArrayList<>();
 		plannerTypes.add("SummerAI");
 		plannerTypes.add("SpringAI");
-		//TODO add the other two as well
+		plannerTypes.add("WinterAI");
+		plannerTypes.add("AutumnAI");
 		return plannerTypes;
 	}
 

@@ -3,6 +3,7 @@ package regopoulos.elias.scenario;
 import javafx.geometry.Dimension2D;
 import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.scenario.ai.BadVisibilityException;
+import regopoulos.elias.scenario.ai.State;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
@@ -25,6 +26,7 @@ public class Agent
 	private ArrayList<Action> possibleActions;	//list of actions to be examined, one of which will be chosen.
 	private Action action;	//action to be carried out by agent
 	private HashMap<Dimension2D, Integer> nodeRisks;
+	private State state;
 
 	Agent(AgentType type, Team lnkTeam, int typeID)
 	{
@@ -36,6 +38,7 @@ public class Agent
 		this.attack = this.type.attack;
 		this.defense = this.type.defense;
 		this.carriesResource = false;
+		this.state = new State(this);
 	}
 
 	/**God agent, reserved for none other than Gaia itself */
@@ -115,6 +118,11 @@ public class Agent
 		return nodeRisks;
 	}
 
+	public State getState()
+	{
+		this.state.updateState();
+		return state;
+	}
 
 	/**Adds neighbouring tiles to team's visible map */
 	private void lookAround()

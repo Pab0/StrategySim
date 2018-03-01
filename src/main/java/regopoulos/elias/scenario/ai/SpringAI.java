@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class SpringAI extends SummerAI
 {
-	private static final String NAME = "SpringAI";
+	static final String NAME = "SpringAI";
 
 	private static final ActionType[] VILLAGER_ACTIONS = {
 			ActionType.EXPLORE,

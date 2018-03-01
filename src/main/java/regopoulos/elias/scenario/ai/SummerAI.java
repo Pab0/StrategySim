@@ -18,7 +18,7 @@ import java.util.Random;
  */
 public class SummerAI extends Planner
 {
-	private static final String NAME = "SummerAI";
+	static final String NAME = "SummerAI";
 
 	private static final double DEFAULT_AGGRO = 0.5;
 	private static final int RANDOM_SEED = 0;

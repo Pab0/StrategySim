@@ -3,6 +3,7 @@ package regopoulos.elias.scenario;
 import javafx.geometry.Dimension2D;
 import regopoulos.elias.scenario.ai.Planner;
 import regopoulos.elias.scenario.ai.SpringAI;
+import regopoulos.elias.scenario.ai.State;
 import regopoulos.elias.scenario.ai.SummerAI;
 import regopoulos.elias.scenario.pathfinding.NodeWeightSetter;
 import regopoulos.elias.scenario.pathfinding.Pathfinder;
@@ -52,6 +53,7 @@ public class Scenario
 		this.setNodeWeightSetter();
 		this.getMap().setDropOffSites();
 		this.initTeams();
+		State.initCalculations();
 		Simulation.sim.getSimUI().initOnSimLoad();
 	}
 
