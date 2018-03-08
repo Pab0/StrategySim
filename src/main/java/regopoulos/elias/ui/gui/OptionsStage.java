@@ -48,9 +48,9 @@ public class OptionsStage extends Stage
 	{
 		this.resourcesInMap	= 	FXCollections.observableArrayList();
 		this.teamsInMap 	=	FXCollections.observableArrayList();
-		this.resourceGoals 	= 	new EnumMap<TerrainType, Integer>(TerrainType.class);
-		this.assignedPlanners=	new EnumMap<TerrainType, String>(TerrainType.class);
-		this.agentNum 		=	new EnumMap<AgentType, Integer>(AgentType.class);
+		this.resourceGoals 		= new EnumMap<>(TerrainType.class);
+		this.assignedPlanners	= new EnumMap<>(TerrainType.class);
+		this.agentNum 			= new EnumMap<>(AgentType.class);
 		initResourceGoals();
 		initAgentNums();
 		this.initModality(Modality.WINDOW_MODAL);
@@ -104,10 +104,6 @@ public class OptionsStage extends Stage
 		vBox.getChildren().add(mapHBox());
 		vBox.getChildren().add(new Separator());
 
-		//MapInfo
-		vBox.getChildren().add(mapInfoHBox());
-		vBox.getChildren().add(new Separator());
-
 		//Needed Resources
 		vBox.getChildren().add(resHBox());
 		vBox.getChildren().add(new Separator());
@@ -135,19 +131,20 @@ public class OptionsStage extends Stage
 		canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 		canvas.getGraphicsContext2D().fillRect(0,0,canvas.getWidth(),canvas.getHeight());
 		mapHBox.getChildren().add(canvas);
+		mapHBox.getChildren().add(mapInfoHBox());
 		return mapHBox;
 	}
 
-	private HBox mapInfoHBox()
+	private VBox mapInfoHBox()
 	{
-		HBox mapInfoHBox = new HBox();
+		VBox mapInfoHBox = new VBox();
 		mapInfoHBox.setSpacing(10);
 		mapInfoHBox.getChildren().add(new Label("Teams found: "));
-		ChoiceBox<TerrainType> teamsView = new ChoiceBox<TerrainType>();
+		ChoiceBox<TerrainType> teamsView = new ChoiceBox<>();
 		teamsView.setItems(this.teamsInMap);
 		mapInfoHBox.getChildren().add(teamsView);
 		mapInfoHBox.getChildren().add(new Label("Resources found: "));
-		ChoiceBox<TerrainType> resView = new ChoiceBox<TerrainType>();
+		ChoiceBox<TerrainType> resView = new ChoiceBox<>();
 		resView.setItems(this.resourcesInMap);
 		mapInfoHBox.getChildren().add(resView);
 		return mapInfoHBox;
@@ -158,7 +155,7 @@ public class OptionsStage extends Stage
 		HBox resHBox = new HBox();
 		resHBox.setSpacing(10);
 		resHBox.getChildren().add(new Label("Needed Resources:"));
-		ChoiceBox<TerrainType> resView = new ChoiceBox<TerrainType>();
+		ChoiceBox<TerrainType> resView = new ChoiceBox<>();
 		TextField neededAmount = new TextField();
 		resView.setItems(this.resourcesInMap);
 		resView.getSelectionModel().selectedIndexProperty().addListener(
@@ -177,7 +174,7 @@ public class OptionsStage extends Stage
 		HBox agentHBox = new HBox();
 		agentHBox.setSpacing(10);
 		agentHBox.getChildren().add(new Label("Number of Agents for each team:"));
-		ChoiceBox<AgentType> agentsView = new ChoiceBox<AgentType>();
+		ChoiceBox<AgentType> agentsView = new ChoiceBox<>();
 		TextField agentNum = new TextField();
 		agentsView.getItems().setAll(AgentType.values());
 		agentsView.getSelectionModel().selectedIndexProperty().addListener(
@@ -196,7 +193,7 @@ public class OptionsStage extends Stage
 		HBox plannerHBox = new HBox();
 		plannerHBox.setSpacing(10);
 		plannerHBox.getChildren().add(new Label("Planners for Teams: "));
-		ChoiceBox<TerrainType> teamsView = new ChoiceBox<TerrainType>();
+		ChoiceBox<TerrainType> teamsView = new ChoiceBox<>();
 		teamsView.setItems(this.teamsInMap);
 		plannerHBox.getChildren().add(teamsView);
 		ChoiceBox<String> plannersView = new ChoiceBox<>();
@@ -358,7 +355,7 @@ public class OptionsStage extends Stage
 
 	private EnumMap<TerrainType, Planner> getPlanners()
 	{
-		EnumMap<TerrainType,Planner> map = new EnumMap<TerrainType, Planner>(TerrainType.class);
+		EnumMap<TerrainType,Planner> map = new EnumMap<>(TerrainType.class);
 		for (TerrainType terrainType : this.teamsInMap)
 		{
 			String plannerName = this.assignedPlanners.get(terrainType);

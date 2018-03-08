@@ -22,7 +22,7 @@ import java.util.ArrayList;
  */
 public abstract class Planner
 {
-	public static final String DEFAULT_AI = "SummerAI";
+	public static final String DEFAULT_AI = "WinterAI";
 	Team lnkTeam;
 
 	public Planner(Team lnkTeam)
@@ -31,10 +31,15 @@ public abstract class Planner
 	}
 	public Action getNextAction(Agent agent)
 	{
+		updatePossibleActions(agent);
+		return chooseBestAction(agent.getPossibleActions(), agent);
+	}
+
+	public void updatePossibleActions(Agent agent)
+	{
 		ArrayList<Action> possibleActions = getPossibleActions(agent);
 		calcPaths(possibleActions, agent);
 		agent.setPossibleActions(possibleActions);
-		return chooseBestAction(possibleActions, agent);
 	}
 
 	/**Returns all possible actions for this agent */
@@ -43,7 +48,7 @@ public abstract class Planner
 		PathfinderGoals pfg = new PathfinderGoals();
 		for (ActionType actionType : ActionType.values())
 		{
-			if (isElligibleForAction(agent, actionType))
+			if (isEligibleForAction(agent, actionType))
 			{
 				pfg.addGoal(actionType, agent.getTeam());
 			}
@@ -62,9 +67,27 @@ public abstract class Planner
 		}
 	}
 
-	abstract boolean isElligibleForAction(Agent agent, ActionType actionType);
+	private boolean isEligibleForAction(Agent agent, ActionType actionType)
+	{
+		boolean eligible = true;
+		if (actionType==ActionType.DROP_OFF && !agent.isCarryingResource())	//Agents can't just appear at the DropOffSite empty-handed
+		{
+			eligible = false;
+		}
+		if (actionType.isGatheringAction() && agent.isCarryingResource())	//Agents can't just drop the precious resources they gathered
+		{
+			eligible = false;
+		}
+
+		boolean rolePermits = rolePermits(agent, actionType);
+		return eligible && rolePermits;
+	}
+
+	abstract boolean rolePermits(Agent agent, ActionType actionType);
 
 	abstract Action chooseBestAction(ArrayList<Action> possibleActions, Agent agent);
+
+	public abstract boolean usesNeuralNet();
 
 	/**Creates and returns Planner implementation named `name`
 	 *

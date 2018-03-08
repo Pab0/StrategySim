@@ -39,7 +39,7 @@ public class SpringAI extends SummerAI
 	}
 
 	@Override
-	public boolean isElligibleForAction(Agent agent, ActionType type)
+	public boolean rolePermits(Agent agent, ActionType type)
 	{
 		boolean eligible = false;
 		switch (agent.getType())

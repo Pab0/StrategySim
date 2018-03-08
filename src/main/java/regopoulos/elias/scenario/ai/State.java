@@ -3,14 +3,34 @@ package regopoulos.elias.scenario.ai;
 import regopoulos.elias.scenario.*;
 import regopoulos.elias.sim.Simulation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 /**
- * Contains the state of each agent of Winter/AutumnAI planner.
+ * Contains the stateVector of each agent of Winter/AutumnAI planner.
+ *
+ * Inputs are (in order):
+ * Team: 	Needed Resources (for each resource)
+ * Agent: 	Carrying resource (for each resource)
+ * 			Current Hit Points
+ * 			Attack
+ * 			Defense
+ * Action:	Whether action is available
+ * 			PathLength to PoI
+ * 			HP of enemy (at PoI)
+ * 			Attack of enemy (at PoI)
+ * 			Defense of enemy (at PoI)
  *
  * All values are normalized to [0,1]
+ *
+ * Actions are (in order, same as in the Enum ActionType, and times their amountToConsider):
+ * 		EXPLORE
+ * 		GATHER_WOOD
+ * 		GATHER_STONE
+ * 		GATHER_GOLD
+ * 		ATTACK
+ * 		DROP_OFF
+ * 		Nothing (null, no Action chosen)
+ *
  */
 
 public class State
@@ -18,15 +38,17 @@ public class State
 	private static int MAX_PATH_COST;	//Max path cost for given map, set as 2*Max(Width,Length)
 	private static int MAX_HP;		//Maximum Health of any agent. HP/Attack/Defense are compared against it.
 
-	private int index;	//keeps track of input array index
-	private double[] state;
-
+	private int inputIndex;		//keeps track of input array inputIndex
+	private int outputIndex;	//keeps track of output array actions
+	private double[] stateVector;
+	private Action[] actions;
+	private static ActionType[] actionTypes;	//the "guide" of how many actions of a specific type to use.
 	private Agent lnkAgent;
 
 	public State(Agent lnkAgent)
 	{
 		this.lnkAgent = lnkAgent;
-		this.state = new double[State.getNInputCount()];
+		this.stateVector = new double[State.getNInputCount()];
 	}
 
 	/** Calculates any immutable data needed later on during the simulation */
@@ -37,11 +59,27 @@ public class State
 
 		State.MAX_HP = Arrays.stream(AgentType.values()).
 				mapToInt(AgentType::getMaxHP).max().getAsInt();
+
+		//Init actionTypes
+		State.actionTypes = new ActionType[State.getNOutputCount()];
+		int actionTypeIndex = 0;
+		for (ActionType actionType : ActionType.values())
+		{
+			for (int i=0; i<actionType.getAmountToConsider(); i++)
+			{
+				State.actionTypes[actionTypeIndex++] = actionType;
+			}
+		}
 	}
 
-	double[] getState()
+	public double[] getStateVector()
 	{
-		return this.state;
+		return this.stateVector;
+	}
+
+	public Action[] getActions()
+	{
+		return actions;
 	}
 
 	public void updateState()
@@ -53,7 +91,7 @@ public class State
 
 	private void updateTeam()
 	{
-		this.index = 0;
+		this.inputIndex = 0;
 		Team lnkTeam = lnkAgent.getTeam();
 
 		//Needed resources
@@ -64,11 +102,11 @@ public class State
 				Resource resource = lnkTeam.getResource(type);
 				if (resource==null || resource.getGoal()==0)	//no such resource needed -> its goal is already reached
 				{
-					state[index++] = 1;
+					stateVector[inputIndex++] = 1;
 				}
 				else
 				{
-					state[index++] = lnkTeam.getResource(type).getCurrent()/(double)lnkTeam.getResource(type).getGoal();
+					stateVector[inputIndex++] = lnkTeam.getResource(type).getCurrent()/(double)lnkTeam.getResource(type).getGoal();
 				}
 			}
 		}
@@ -82,73 +120,81 @@ public class State
 		{
 			if (type.isResource())
 			{
-				state[index++] = (type.equals(carrying))?1:0;
+				stateVector[inputIndex++] = (type.equals(carrying))?1:0;
 			}
 		}
 
 		//HP
-		state[index++] = lnkAgent.getHP()/(double)State.MAX_HP;
+		stateVector[inputIndex++] = lnkAgent.getHP()/(double)State.MAX_HP;
 		//Attack
-		state[index++] = lnkAgent.getType().getAttack()/(double)State.MAX_HP;
+		stateVector[inputIndex++] = lnkAgent.getType().getAttack()/(double)State.MAX_HP;
 		//Defense
-		state[index++] = lnkAgent.getType().getDefense()/(double)State.MAX_HP;
+		stateVector[inputIndex++] = lnkAgent.getType().getDefense()/(double)State.MAX_HP;
 	}
 
+	/** Sets the action vector,
+	 * and updates the state vector with the actions' inputs.
+	 */
 	private void updateActions()
 	{
-		HashMap<ActionType, ArrayList<Action>> actions = getActionHashMap();
-		for (ActionType actionType : ActionType.values())
-		{
-			for (Action action : actions.get(actionType))
-			{
-				addAction(action);
+		//Set action (output) vector
+		this.outputIndex = 0;
+		this.actions = getActionVector();
 
-				//Filling out the rest of this actionTypes' input nodes with null actions
-				int amountToConsider = actionType.getAmountToConsider();
-				int amountConsidered = actions.get(actionType).size();
-				for (int i=amountConsidered; i<amountToConsider; i++)
-				{
-					addEmptyActionArray(actionType);
-				}
+		//Set remaining state (input) vector
+		for (int i=0; i<this.actions.length; i++)
+		{
+			if (this.actions[i]!=null)
+			{
+				addActionToState(this.actions[i]);
+			}
+			else	//Filling out the rest of this actionTypes' input nodes with null actions
+			{
+				addEmptyActionToState(State.actionTypes[i]);
 			}
 		}
 	}
 
-	private void addAction(Action action)
+	/** Add Action to state vector */
+	private void addActionToState(Action action)
 	{
 		double isAvailable = 1;
 		double pathCost = action.getPathCost()/(double)State.MAX_PATH_COST;
 		Agent enemyAgent = Simulation.sim.getScenario().getAgentAtPos(action.getPoI());
+		if (enemyAgent==null)	//agent has just died
+		{
+			enemyAgent = action.getEnemyAgent();	//get last attacked agent
+		}
 
 		switch (action.getType())
 		{
 			case EXPLORE:
-				state[index++] = isAvailable;
-				state[index++] = pathCost;
+				stateVector[inputIndex++] = isAvailable;
+				stateVector[inputIndex++] = pathCost;
 				break;
 			case GATHER_WOOD:
 			case GATHER_STONE:
 			case GATHER_GOLD:
-				state[index++] = isAvailable;
-				state[index++] = pathCost;
+				stateVector[inputIndex++] = isAvailable;
+				stateVector[inputIndex++] = pathCost;
 				break;
 			case ATTACK:
-				state[index++] = isAvailable;
-				state[index++] = pathCost;
-				state[index++] = enemyAgent.getHP()/(double)State.MAX_HP;
-				state[index++] = enemyAgent.getType().getAttack()/(double)State.MAX_HP;
-				state[index++] = enemyAgent.getType().getDefense()/(double)State.MAX_HP;
+				stateVector[inputIndex++] = isAvailable;
+				stateVector[inputIndex++] = pathCost;
+				stateVector[inputIndex++] = enemyAgent.getHP()/(double)State.MAX_HP;
+				stateVector[inputIndex++] = enemyAgent.getType().getAttack()/(double)State.MAX_HP;
+				stateVector[inputIndex++] = enemyAgent.getType().getDefense()/(double)State.MAX_HP;
 				break;
 			case DROP_OFF:
-				state[index++] = isAvailable;
-				state[index++] = pathCost;
+				stateVector[inputIndex++] = isAvailable;
+				stateVector[inputIndex++] = pathCost;
 				break;
 		}
 
 	}
 
-	/** Adds to state an array corresponding to a null action of type actionType */
-	private void addEmptyActionArray(ActionType actionType)
+	/** Adds to stateVector an array corresponding to a null action of type actionType */
+	private void addEmptyActionToState(ActionType actionType)
 	{
 		double[] array = null;
 		switch (actionType)
@@ -157,7 +203,11 @@ public class State
 				array = new double[] {0,0};
 				break;
 			case GATHER_WOOD:
+				array = new double[] {0,0};
+				break;
 			case GATHER_STONE:
+				array = new double[] {0,0};
+				break;
 			case GATHER_GOLD:
 				array = new double[] {0,0};
 				break;
@@ -170,21 +220,32 @@ public class State
 		}
 		for (double emptyInputNode : array)
 		{
-			state[index++] = emptyInputNode;
+			stateVector[inputIndex++] = emptyInputNode;
 		}
 	}
 
-	/** Returns lnkAgent's possible Actions, hashed by their ActionType */
-	private HashMap<ActionType, ArrayList<Action>> getActionHashMap()
+	/** Returns lnkAgent's possible Actions as an array,
+	 *  padded by null objects to fit the respective amountToConsider */
+	private Action[] getActionVector()
 	{
-		HashMap<ActionType, ArrayList<Action>> actions = new HashMap<>();
+		Action[] actions = new Action[State.getNOutputCount()];
 		for (ActionType actionType : ActionType.values())
 		{
-			actions.put(actionType, new ArrayList<Action>());
-		}
-		for (Action possibleAction : lnkAgent.getPossibleActions())
-		{
-			actions.get(possibleAction.getType()).add(possibleAction);
+			int amountToConsider = actionType.getAmountToConsider();
+			int amountConsidered = 0;
+			Action foo[] = lnkAgent.getPossibleActions().stream().
+					filter(action -> action.getType().equals(actionType)).
+					toArray(Action[]::new);
+			for (Action action : foo)
+			{
+				actions[outputIndex++] = action;
+				amountConsidered++;
+			}
+			//Filling out the rest of this actionTypes' input nodes with null actions
+			for (int i=amountConsidered; i<amountToConsider; i++)
+			{
+				actions[outputIndex++] = null;
+			}
 		}
 		return actions;
 	}
@@ -224,7 +285,6 @@ public class State
 	{
 		int nOutputCount = Arrays.stream(ActionType.values()).
 				mapToInt(ActionType::getAmountToConsider).sum();
-		nOutputCount += 1;	//Do nothing; no Zugzwang here either.
 		return nOutputCount;
 	}
 
@@ -233,7 +293,7 @@ public class State
 	{
 		String str = "[";
 		String digit;
-		for (double d : this.state)
+		for (double d : this.stateVector)
 		{
 			str += (d==0 || d==1)?d:String.format("%.4f",d);
 			str += ", ";

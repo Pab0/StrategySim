@@ -4,6 +4,7 @@ import javafx.geometry.Dimension2D;
 import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.scenario.ai.BadVisibilityException;
 import regopoulos.elias.scenario.ai.State;
+import regopoulos.elias.scenario.ai.WinterAI;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
@@ -145,17 +146,26 @@ public class Agent
 
 	private void moveOrDo() throws BadVisibilityException
 	{
+		boolean didAction = false;	//used for neural network reward
 		if (action==null)	//No Zugzwang
 		{
-			return;
+
 		}
-		if (this.action.getPath().size()>1)
+		else if (this.action.getPath().size()>1)
 		{
 			move();
 		}
 		else if (this.action.getPath().size()==1)
 		{
 			doAction();
+			didAction = true;
+		}
+
+		if (this.lnkTeam.getPlanner().usesNeuralNet())	//setting rewards and updating Q
+		{
+			WinterAI winterAI = (WinterAI)(this.lnkTeam.getPlanner());
+			winterAI.getQLearning().updateQValue(this, this.action, didAction);
+			winterAI.getQLearning().updateEpsilon(didAction);
 		}
 	}
 
@@ -164,7 +174,7 @@ public class Agent
 		ArrayList<Dimension2D> path = this.action.getPath();
 		setPos(path.get(0));
 		this.action.getPath().remove(0);
-		Simulation.sim.log("Moved to " + this.pos);
+		Simulation.sim.log("Moved to [" + (int)this.pos.getHeight() + "," + (int)this.pos.getWidth() + "]");
 	}
 
 	private void doAction() throws BadVisibilityException
@@ -186,11 +196,13 @@ public class Agent
 		{
 			enemyAgent.die();
 		}
+		this.getAction().setEnemyAgent(enemyAgent);
 	}
 
 	public void dropOffResource()
 	{
 		this.lnkTeam.getResources().get(this.resouceCarrying).dropOff();
+		this.getAction().setResourceDroppedOff(this.resouceCarrying);
 		this.carriesResource = false;
 		this.resouceCarrying = null;
 	}

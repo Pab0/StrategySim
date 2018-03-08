@@ -41,7 +41,7 @@ public class SummerAI extends Planner
 	/**All SummerAI agents are free to do all actions,
 	 * so this always returns true.
 	 */
-	boolean isElligibleForAction(Agent agent, ActionType type)
+	boolean rolePermits(Agent agent, ActionType type)
 	{
 		return true;
 	}
@@ -61,7 +61,7 @@ public class SummerAI extends Planner
 					min(Comparator.comparing(action -> action.path.size())).get();
 		}
 		//if carrying resource, return it to closest dropOffSite (if found path to it)
-		else if (lnkAgent.isCarryingResource() && possibleActions.stream().anyMatch(action -> action.type==ActionType.DROP_OFF))
+		else if (possibleActions.stream().anyMatch(action -> action.type==ActionType.DROP_OFF))
 		{
 			bestAction = possibleActions.stream().
 				filter(action -> action.type==ActionType.DROP_OFF).
@@ -93,6 +93,12 @@ public class SummerAI extends Planner
 			//No (path to) action found - most likely surrounded by teammates
 		}
 		return bestAction;
+	}
+
+	@Override
+	public boolean usesNeuralNet()
+	{
+		return false;
 	}
 
 	@Override

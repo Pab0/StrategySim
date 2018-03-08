@@ -14,6 +14,8 @@ public class Action
 {
 	private Node node;			//location of Point of Interest on map
 	ActionType type;
+	private TerrainType resourceDroppedOff;	//last dropped off resource - only used for rewarding
+	private Agent enemyAgent;				//last attacked enemy agent - only used for rewarding
 	ArrayList<Dimension2D> path;	//calculated path from agent to goal
 	private int pathCost;			//Weighted cost of path
 
@@ -100,6 +102,26 @@ public class Action
 		return type;
 	}
 
+	public void setResourceDroppedOff(TerrainType terrainType)
+	{
+		this.resourceDroppedOff = terrainType;
+	}
+
+	public TerrainType getResourceDroppedOff()
+	{
+		return resourceDroppedOff;
+	}
+
+	public void setEnemyAgent(Agent enemyAgent)
+	{
+		this.enemyAgent = enemyAgent;
+	}
+
+	public Agent getEnemyAgent()
+	{
+		return enemyAgent;
+	}
+
 	public void doAction(Agent lnkAgent) throws BadVisibilityException
 	{
 		switch (this.getType())
@@ -125,9 +147,16 @@ public class Action
 		}
 	}
 
+	/** @return a shorter version of its toString() method.
+	 * Useful when screen estate is limited. */
+	public String shortHand()
+	{
+		return this.type.getShortHand() + "@" + this.node.getY() + "," + this.node.getX();
+	}
+
 	@Override
 	public String toString()
 	{
-		return this.type.description + " @ " + this.node.getX() + "," + this.node.getY();
+		return this.type.description + " @ [" + this.node.getY() + "," + this.node.getX() + "]";
 	}
 }

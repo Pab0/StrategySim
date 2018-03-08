@@ -1,6 +1,9 @@
 package regopoulos.elias.log;
 
 import regopoulos.elias.scenario.*;
+import regopoulos.elias.scenario.ai.AutumnAI;
+import regopoulos.elias.scenario.ai.NetStorage;
+import regopoulos.elias.scenario.ai.WinterAI;
 import regopoulos.elias.sim.Simulation;
 
 import java.io.BufferedWriter;
@@ -47,6 +50,9 @@ public class Logger implements LogOutput
 
 		//Statistics follow
 		sb.append("Scenario statistics: \n");
+
+		//Step count
+		sb.append("Step count: " + Simulation.sim.getSimLoop().getRoundsCount() + "\n");
 
 		//Agents
 		sb.append("Surviving agents: \n");
@@ -134,6 +140,10 @@ public class Logger implements LogOutput
 		{
 			sb.append("\t" + scenario.getTeamByID(terrainType) + ": ");
 			sb.append(options.getPlanners().get(terrainType).getPlannerName());
+			if (options.getPlanners().get(terrainType).usesNeuralNet())
+			{
+				sb.append(", Neural Net: " + NetStorage.getNet(terrainType));
+			}
 			sb.append('\n');
 		}
 

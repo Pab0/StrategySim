@@ -1,10 +1,7 @@
 package regopoulos.elias.scenario;
 
 import javafx.geometry.Dimension2D;
-import regopoulos.elias.scenario.ai.Planner;
-import regopoulos.elias.scenario.ai.SpringAI;
-import regopoulos.elias.scenario.ai.State;
-import regopoulos.elias.scenario.ai.SummerAI;
+import regopoulos.elias.scenario.ai.*;
 import regopoulos.elias.scenario.pathfinding.NodeWeightSetter;
 import regopoulos.elias.scenario.pathfinding.Pathfinder;
 import regopoulos.elias.sim.SimLoop;
@@ -48,6 +45,7 @@ public class Scenario
 	public void init() throws NotEnoughTilesFoundException
 	{
 		scenarioOptions.setOptionsToScenario(this);
+		NetStorage.init();
 		this.agentPos = new HashMap<>();
 		this.setPathfinder();
 		this.setNodeWeightSetter();

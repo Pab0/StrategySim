@@ -184,6 +184,11 @@ public class SimLoop extends AnimationTimer
 		}
 	}
 
+	public int getRoundsCount()
+	{
+		return this.roundsCount;
+	}
+
 	public void setGranularity(TimerGranularity granularity)
 	{
 		this.granularity = granularity;
