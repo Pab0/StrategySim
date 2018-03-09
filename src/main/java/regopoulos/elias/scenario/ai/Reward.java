@@ -14,7 +14,7 @@ public class Reward
 	private static double GATHER_REWARD 	= 0.5;	//only the resources still needed
 	private static double ATTACK_REWARD 	= 0.001;	//reward per damage point
 	private static double KILL_REWARD		= 1;
-	private static double DIE_REWARD		= -1;
+	private static double DIE_REWARD		= -2;
 
 	static double getReward(Agent agent, Action action, boolean didAction)
 	{
@@ -34,6 +34,10 @@ public class Reward
 				case ATTACK:
 					reward = Reward.getAttackReward(agent, action);
 			}
+		}
+		if (!agent.isAlive())
+		{
+			reward = Reward.getDieReward();
 		}
 		return reward;
 	}
@@ -77,6 +81,12 @@ public class Reward
 			attackReward += Reward.KILL_REWARD;
 		}
 		return attackReward;
+	}
+
+	private static double getDieReward()
+	{
+		double dieReward = Reward.DIE_REWARD;
+		return dieReward;
 	}
 
 }

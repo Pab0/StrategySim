@@ -176,7 +176,8 @@ public class QLearning
 		return action;
 	}
 
-	/** Gets called after agent's action/movement has been carried out */
+	/** Gets called after agent's action/movement has been carried out.
+	 * Also after agent's death. */
 	public void updateQValue(Agent agent, Action action, boolean didAction)
 	{
 		setOldState(getCurState());

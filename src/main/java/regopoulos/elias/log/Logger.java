@@ -52,7 +52,7 @@ public class Logger implements LogOutput
 		sb.append("Scenario statistics: \n");
 
 		//Step count
-		sb.append("Step count: " + Simulation.sim.getSimLoop().getRoundsCount() + "\n");
+		sb.append("Rounds count: " + Simulation.sim.getSimLoop().getRoundsCount() + "\n");
 
 		//Agents
 		sb.append("Surviving agents: \n");

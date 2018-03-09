@@ -26,6 +26,7 @@ public class Agent
 	public Dimension2D pos;	//agent's current position
 	private ArrayList<Action> possibleActions;	//list of actions to be examined, one of which will be chosen.
 	private Action action;	//action to be carried out by agent
+	private Agent killer;	//Killer of this agent - only set upon death
 	private HashMap<Dimension2D, Integer> nodeRisks;
 	private State state;
 
@@ -107,6 +108,16 @@ public class Agent
 	public void setAction(Action action)
 	{
 		this.action = action;
+	}
+
+	public Agent getKiller()
+	{
+		return killer;
+	}
+
+	public void setKiller(Agent killer)
+	{
+		this.killer = killer;
 	}
 
 	public void setNodeRisks(HashMap<Dimension2D, Integer> nodeRisks)
@@ -194,6 +205,7 @@ public class Agent
 		enemyAgent.HP -= damage;
 		if (!enemyAgent.isAlive())
 		{
+			enemyAgent.setKiller(this);
 			enemyAgent.die();
 		}
 		this.getAction().setEnemyAgent(enemyAgent);
@@ -227,6 +239,13 @@ public class Agent
 	private void die()	//the "void" type feels oddly fitting for this mortal function
 	{
 		this.HP = 0;
+		//Update Q value, applying death penalty (called "reward" for consistency and marketing purposes)
+		if (this.lnkTeam.getPlanner().usesNeuralNet())
+		{
+			WinterAI winterAI = (WinterAI)(this.lnkTeam.getPlanner());
+			winterAI.getQLearning().updateQValue(this, this.action, false);
+		}
+
 		this.lnkTeam.getAgents().remove(this);
 		Simulation.sim.getScenario().getPositionsWithAgents().remove(pos);
 		this.setPos(-1,-1);

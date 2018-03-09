@@ -225,7 +225,6 @@ public class Scenario
 	public void finish()
 	{
 		this.runCount++;
-		this.close();
 		Simulation.sim.getLogger().logStats();
 	}
 

@@ -161,9 +161,13 @@ public class State
 		double isAvailable = 1;
 		double pathCost = action.getPathCost()/(double)State.MAX_PATH_COST;
 		Agent enemyAgent = Simulation.sim.getScenario().getAgentAtPos(action.getPoI());
-		if (enemyAgent==null)	//agent has just died
+		if (enemyAgent==null)	//enemy agent has just died
 		{
 			enemyAgent = action.getEnemyAgent();	//get last attacked agent
+		}
+		if (!lnkAgent.isAlive())	//QLearning gets updated for an agent that has just died, enemyAgent set to killer
+		{
+			enemyAgent = lnkAgent.getKiller();
 		}
 
 		switch (action.getType())
