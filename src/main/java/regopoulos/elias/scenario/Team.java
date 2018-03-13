@@ -8,13 +8,12 @@ import regopoulos.elias.sim.Simulation;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Team implements MapViewTeam
 {
-	private static final String ICON_FOLDER = "icons/teams/";	//for the teamSpots
+	private static final String ICON_DIRECTORY = "icons/teams/";	//for the teamSpots
 
 	private boolean[][] visibleMap;		//mask of visible portion of scenario's mapprivate HashMap<Dimension2D, Integer> nodeRisks;
 	private Planner planner;
@@ -28,7 +27,7 @@ public class Team implements MapViewTeam
 	public Team(TerrainType terrainType)
 	{
 		this.teamID = Character.getNumericValue(terrainType.glyph);
-		this.teamSpotIcon = new Image(ICON_FOLDER + this.teamID + ".png");
+		this.teamSpotIcon = new Image(ICON_DIRECTORY + this.teamID + ".png");
 		this.terrainType = terrainType;
 	}
 

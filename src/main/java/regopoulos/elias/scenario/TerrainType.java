@@ -22,7 +22,7 @@ public enum TerrainType
 	public boolean traversable;
 	boolean isDropOffSite;
 
-	private static final String ICON_FOLDER = "icons/terrain/";
+	private static final String ICON_DIRECTORY = "icons/terrain/";
 
 	TerrainType(char glyph, int capacity, String iconName)
 	{
@@ -34,11 +34,11 @@ public enum TerrainType
 		this.glyph = glyph;
 		try
 		{
-			this.icon = new Image(TerrainType.ICON_FOLDER + iconName);	//May or may not need "file:" prefix
+			this.icon = new Image(TerrainType.ICON_DIRECTORY + iconName);	//May or may not need "file:" prefix
 		}
 		catch (Exception e)
 		{
-			System.out.println("Tried to read " + ICON_FOLDER + iconName);
+			System.out.println("Tried to read " + ICON_DIRECTORY + iconName);
 			e.printStackTrace();
 		}
 		this.traversable = traversable;

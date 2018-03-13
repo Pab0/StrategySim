@@ -50,7 +50,7 @@ public class QLearning
 		setNet(lnkTeam);
 	}
 
-	private void setNet(Team lnkTeam)	//TODO use existing net, if available, or load from file
+	private void setNet(Team lnkTeam)
 	{
 		setNodeCounts();
 		net = NetStorage.getNet(lnkTeam.getTerrainType());
@@ -158,8 +158,7 @@ public class QLearning
 	private static Action getRandomAction(State state)
 	{
 		Action[] actions = state.getActions();
-		Random random = new Random();
-		int index = random.nextInt(actions.length);
+		int index = QLearning.rng.nextInt(actions.length);
 		int initIndex = index;
 		Action action = null;
 		//Picks a random index and searches forward until a non-null action was found,

@@ -12,7 +12,7 @@ public class Reward
 	private static double WIN_REWARD		= 10;
 	private static double DROP_OFF_REWARD 	= 1;	//only the resources still needed
 	private static double GATHER_REWARD 	= 0.5;	//only the resources still needed
-	private static double ATTACK_REWARD 	= 0.001;	//reward per damage point
+	private static double ATTACK_REWARD 	= -10.001;	//reward per damage point
 	private static double KILL_REWARD		= 1;
 	private static double DIE_REWARD		= -2;
 

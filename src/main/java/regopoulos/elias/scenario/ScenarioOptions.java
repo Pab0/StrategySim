@@ -1,5 +1,6 @@
 package regopoulos.elias.scenario;
 
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import regopoulos.elias.scenario.ai.Planner;
 
 import java.util.EnumMap;
@@ -23,6 +24,8 @@ public class ScenarioOptions
 	private EnumMap<TerrainType, Integer> resourceGoals;
 	private EnumMap<AgentType, Integer> agentNum;
 	private EnumMap<TerrainType, Planner> planners;
+	private EnumMap<TerrainType, String> netsToLoad;
+	private EnumMap<TerrainType,MultiLayerNetwork> teamNets;
 
 	public void setMap(Map map)
 	{
@@ -67,6 +70,26 @@ public class ScenarioOptions
 	public EnumMap<TerrainType, Planner> getPlanners()
 	{
 		return planners;
+	}
+
+	public void setNetsToLoad(EnumMap<TerrainType, String> netsToLoad)
+	{
+		this.netsToLoad = netsToLoad;
+	}
+
+	public EnumMap<TerrainType, String> getNetsToLoad()
+	{
+		return netsToLoad;
+	}
+
+	public void setTeamNets(EnumMap<TerrainType, MultiLayerNetwork> teamNets)
+	{
+		this.teamNets = teamNets;
+	}
+
+	public EnumMap<TerrainType, MultiLayerNetwork> getTeamNets()
+	{
+		return teamNets;
 	}
 
 	void setOptionsToScenario(Scenario scenario)

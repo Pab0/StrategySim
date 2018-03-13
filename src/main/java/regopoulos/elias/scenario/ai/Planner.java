@@ -2,6 +2,7 @@ package regopoulos.elias.scenario.ai;
 
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Team;
+import regopoulos.elias.scenario.TerrainType;
 import regopoulos.elias.scenario.pathfinding.Pathfinder;
 import regopoulos.elias.scenario.pathfinding.PathfinderGoals;
 import regopoulos.elias.sim.Simulation;
@@ -29,6 +30,7 @@ public abstract class Planner
 	{
 		this.lnkTeam = lnkTeam;
 	}
+
 	public Action getNextAction(Agent agent)
 	{
 		updatePossibleActions(agent);
@@ -126,4 +128,29 @@ public abstract class Planner
 	}
 
 	abstract public String getPlannerName();
+
+	/** Only info, doesn't create any persisting objects.
+	 * @return whether the planner uses a neural network.
+	 * @param plannerName String describing the planner's name.
+	 */
+	public static boolean usesNet(String plannerName)
+	{
+		boolean usesNet = false;
+		if (plannerName==null)
+		{
+			plannerName = Planner.DEFAULT_AI;
+		}
+		switch (plannerName)
+		{
+			case "SummerAI":
+			case "SpringAI":
+				usesNet = false;
+				break;
+			case "WinterAI":
+			case "AutumnAI":
+				usesNet = true;
+				break;
+		}
+		return usesNet;
+	}
 }

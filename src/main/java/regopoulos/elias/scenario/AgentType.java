@@ -14,7 +14,7 @@ public enum AgentType
 	int defense;
 	Image icon;
 
-	private static final String ICON_FOLDER = "icons/agents/";
+	private static final String ICON_DIRECTORY = "icons/agents/";
 
 	AgentType(int maxHP, int attack, int defense, String iconName)
 	{
@@ -23,11 +23,11 @@ public enum AgentType
 		this.defense = defense;
 		try
 		{
-			this.icon = new Image(AgentType.ICON_FOLDER + iconName);	//May or may not need "file:" prefix
+			this.icon = new Image(AgentType.ICON_DIRECTORY + iconName);	//May or may not need "file:" prefix
 		}
 		catch (Exception e)
 		{
-			System.out.println("Tried to read " + ICON_FOLDER + iconName);
+			System.out.println("Tried to read " + ICON_DIRECTORY + iconName);
 			e.printStackTrace();
 		}
 	}

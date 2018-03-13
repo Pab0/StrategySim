@@ -64,7 +64,6 @@ public class ActionPane extends VBox implements Updateable
 
 	private ObservableList<String> getActionWorth()
 	{
-		//TODO
 		Agent selAgent = Simulation.sim.getSimUI().getSelectedAgent();
 		Action[] actions = selAgent.getState().getActions();
 		WinterAI winterAI = (WinterAI)(selAgent.getTeam().getPlanner());

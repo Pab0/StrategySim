@@ -2,6 +2,7 @@ package regopoulos.elias.sim;
 
 import regopoulos.elias.log.Logger;
 import regopoulos.elias.scenario.Scenario;
+import regopoulos.elias.scenario.ai.NetStorage;
 import regopoulos.elias.ui.SimulationUI;
 import regopoulos.elias.ui.gui.SimWindow;
 
@@ -79,6 +80,7 @@ public class Simulation
 	{
 		this.getSimLoop().finish();
 		Simulation.sim.log("Simulation finished");
+		NetStorage.lockAway();
 		this.logger.stop();
 	}
 }

@@ -14,14 +14,18 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.util.ModelSerializer;
 import regopoulos.elias.StartSim;
 import regopoulos.elias.log.Logger;
 import regopoulos.elias.scenario.*;
+import regopoulos.elias.scenario.ai.NetStorage;
 import regopoulos.elias.scenario.ai.Planner;
 import regopoulos.elias.sim.Simulation;
 
 import java.io.File;
 import java.util.EnumMap;
+import java.util.HashMap;
 
 
 public class OptionsStage extends Stage
@@ -42,6 +46,8 @@ public class OptionsStage extends Stage
 	//TODO display default values in TextBox
 	private EnumMap<TerrainType, Integer> resourceGoals;
 	private EnumMap<TerrainType, String> assignedPlanners;
+	private EnumMap<TerrainType, String> netsToLoad;
+	private EnumMap<TerrainType,MultiLayerNetwork> teamNets;
 	private EnumMap<AgentType, Integer> agentNum;
 
 	OptionsStage()
@@ -50,6 +56,8 @@ public class OptionsStage extends Stage
 		this.teamsInMap 	=	FXCollections.observableArrayList();
 		this.resourceGoals 		= new EnumMap<>(TerrainType.class);
 		this.assignedPlanners	= new EnumMap<>(TerrainType.class);
+		this.netsToLoad			= new EnumMap<>(TerrainType.class);
+		this.teamNets			= new EnumMap<>(TerrainType.class);
 		this.agentNum 			= new EnumMap<>(AgentType.class);
 		initResourceGoals();
 		initAgentNums();
@@ -192,13 +200,21 @@ public class OptionsStage extends Stage
 	{
 		HBox plannerHBox = new HBox();
 		plannerHBox.setSpacing(10);
+
 		plannerHBox.getChildren().add(new Label("Planners for Teams: "));
 		ChoiceBox<TerrainType> teamsView = new ChoiceBox<>();
 		teamsView.setItems(this.teamsInMap);
+		teamsView.getSelectionModel().selectFirst();
 		plannerHBox.getChildren().add(teamsView);
+
 		ChoiceBox<String> plannersView = new ChoiceBox<>();
 		plannersView.setItems(FXCollections.observableArrayList(Planner.getPlannerTypes()));
 		plannerHBox.getChildren().add(plannersView);
+
+		Button ldNetBtn = new Button("Choose existing net");
+		ldNetBtn.setOnAction(event -> loadNet(teamsView.getValue(), plannersView.getValue()));
+		plannerHBox.getChildren().add(ldNetBtn);
+
 		Button setPlannerBtn = new Button("Assign planner");
 		setPlannerBtn.setOnAction(event -> this.assignedPlanners.put(teamsView.getValue(), plannersView.getValue()));
 		plannerHBox.getChildren().add(setPlannerBtn);
@@ -273,6 +289,35 @@ public class OptionsStage extends Stage
 		System.out.println("Found resources: " + this.resourcesInMap);
 	}
 
+	private void loadNet(TerrainType teamType, String assignedPlanner)
+	{
+		if (Planner.usesNet(assignedPlanner))
+		{
+			FileChooser fc = new FileChooser();
+			fc.setTitle("Choose existing neural network");
+			File path = new File(NetStorage.NET_DIRECTORY);
+			path.mkdirs();
+			fc.setInitialDirectory(new File(NetStorage.NET_DIRECTORY));
+			fc.getExtensionFilters().add(
+					new FileChooser.ExtensionFilter("Neural network created with DL4J", "*.zip"));
+			File netFile = fc.showOpenDialog(OptionsStage.this);
+			try
+			{
+				MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(netFile);
+				this.netsToLoad.put(teamType, netFile.getName());
+				this.teamNets.put(teamType, net);
+			}
+			catch (Exception e)
+			{
+				new Alert(Alert.AlertType.ERROR, "Error reading neural network from file " + netFile).showAndWait();
+			}
+		}
+		else
+		{
+			new Alert(Alert.AlertType.ERROR, "Planner not eligible for neural network").showAndWait();
+		}
+	}
+
 	/**Gets called on "Start" button click */
 	private void setOptions()
 	{
@@ -295,6 +340,8 @@ public class OptionsStage extends Stage
 			options.setResourceGoals(this.getResourceGoals());
 			options.setTeams(this.getTeams());
 			options.setAgentNum(this.getAgentNum());
+			options.setTeamNets(this.teamNets);
+			options.setNetsToLoad(this.netsToLoad);
 			options.setPlanners(this.getPlanners());
 			try
 			{
@@ -376,5 +423,15 @@ public class OptionsStage extends Stage
 	private EnumMap<AgentType, Integer> getAgentNum()
 	{
 		return this.agentNum;
+	}
+
+	private EnumMap<TerrainType, String> getNetsToLoad()
+	{
+		return netsToLoad;
+	}
+
+	private EnumMap<TerrainType, MultiLayerNetwork> getTeamNets()
+	{
+		return teamNets;
 	}
 }

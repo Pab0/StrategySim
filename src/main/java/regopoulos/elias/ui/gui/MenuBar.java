@@ -5,12 +5,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToolBar;
+import javafx.stage.FileChooser;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.util.ModelSerializer;
+import regopoulos.elias.scenario.ai.NetStorage;
 import regopoulos.elias.sim.Simulation;
 import regopoulos.elias.sim.TimerGranularity;
 
+import java.io.File;
+
 public class MenuBar extends ToolBar implements Updateable
 {
-	private Button newBtn, loadBtn, saveBtn, pauseBtn, fasterBtn, slowerBtn, agentBtn, teamBtn, roundBtn;
+	private Button newBtn, dbgBtn, pauseBtn, fasterBtn, slowerBtn, agentBtn, teamBtn, roundBtn;
 	private Label roundIndicatorLabel, simSpeedLabel;
 	MenuBar(int width, int height)
 	{
@@ -22,8 +28,7 @@ public class MenuBar extends ToolBar implements Updateable
 		this.setPrefSize(width,height);
 		this.setOrientation(Orientation.HORIZONTAL);
 		this.getItems().add(newBtn);
-		this.getItems().add(loadBtn);
-		this.getItems().add(saveBtn);
+		this.getItems().add(dbgBtn);
 		this.getItems().add(new Separator());
 
 		this.getItems().add(this.roundIndicatorLabel);
@@ -50,8 +55,8 @@ public class MenuBar extends ToolBar implements Updateable
 	{
 		newBtn = new Button("New");
 		newBtn.setOnAction(e -> new OptionsStage());
-		loadBtn = new Button("Load"	);
-		saveBtn = new Button("Save"	);
+		dbgBtn = new Button("Debug");
+		dbgBtn.setOnAction(e -> debug());
 
 		pauseBtn = new Button("Pause");
 		pauseBtn.setOnAction(e -> flipPaused());
@@ -73,6 +78,29 @@ public class MenuBar extends ToolBar implements Updateable
 		Simulation.sim.getSimLoop().flipPaused();
 		String btnText = Simulation.sim.getSimLoop().isPaused()?"Play":"Pause";
 		pauseBtn.setText(btnText);
+	}
+
+	/** Meant only for random debugging */
+	private void debug()
+	{
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Choose existing neural network");
+		File path = new File(NetStorage.NET_DIRECTORY);
+		path.mkdirs();
+		fc.setInitialDirectory(new File(NetStorage.NET_DIRECTORY));
+		fc.getExtensionFilters().add(
+				new FileChooser.ExtensionFilter("Neural network created with DL4J", "*.zip"));
+		File netFile = fc.showOpenDialog(null);
+		try
+		{
+			MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(netFile);
+//				this.netsToLoad.put(teamType, netFile.getName());
+//				this.teamNets.put(teamType, net);
+		}
+		catch( Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	@Override
