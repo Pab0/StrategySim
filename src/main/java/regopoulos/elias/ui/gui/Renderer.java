@@ -13,13 +13,15 @@ import regopoulos.elias.scenario.pathfinding.PathfindingIcons;
 import regopoulos.elias.scenario.pathfinding.TileChecker;
 import regopoulos.elias.sim.Simulation;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 
 public class Renderer
 {
-	static final short TILE_WIDTH = 30;
+	static short TILE_WIDTH;
 
 	Point2D mapTileCapacity;	//how many tiles fit onto the canvas
 	private Point2D tileOffset;			//how many tiles one should shift
@@ -32,6 +34,7 @@ public class Renderer
 
 	Renderer(GraphicsContext gc)
 	{
+		loadProperties();
 		this.gc = gc;
 		this.mapTileCapacity = new Point2D(gc.getCanvas().getWidth()/TILE_WIDTH,
 												gc.getCanvas().getHeight()/TILE_WIDTH);
@@ -39,6 +42,20 @@ public class Renderer
 		this.subTileOffset = new Point2D(0,0);
 
 		this.pathfindingIcons = new PathfindingIcons();
+	}
+
+	private void loadProperties()
+	{
+		Properties prop = new Properties();
+		try (InputStream fis = Renderer.class.getClassLoader().getResourceAsStream("Renderer.properties"))
+		{
+			prop.loadFromXML(fis);
+			Renderer.TILE_WIDTH = Short.parseShort(prop.getProperty("TileWidth"));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void render()

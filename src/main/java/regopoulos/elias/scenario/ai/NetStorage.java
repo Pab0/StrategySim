@@ -77,6 +77,8 @@ public class NetStorage
 		File locationToSave = new File(NET_DIRECTORY + filename);
 		try
 		{
+			File path = new File(NetStorage.NET_DIRECTORY);
+			path.mkdirs();
 			ModelSerializer.writeModel(net, locationToSave, true);
 		}
 		catch (IOException ioe)

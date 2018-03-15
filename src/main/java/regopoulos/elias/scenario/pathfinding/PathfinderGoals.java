@@ -6,6 +6,7 @@ import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.scenario.ai.ActionType;
 import regopoulos.elias.sim.Simulation;
 
+import javax.lang.model.util.ElementScanner6;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -57,14 +58,14 @@ public class PathfinderGoals
 	void checkIfGoal(Node node, Team lnkTeam, boolean[][] visibleMap)
 	{
 		TerrainType type = Simulation.sim.getScenario().getMap().getTerrainAt(node.y, node.x);
-		if (!visibleMap[node.y][node.x] && objectsToFind.keySet().contains(TerrainType.UNKNOWN))	//Exploring the unknown
+		if (!visibleMap[node.y][node.x] && objectsToFind.keySet().contains(TerrainType.UNKNOWN))    //Exploring the unknown
 		{
 			foundObjectGoal(TerrainType.UNKNOWN, node);
 		}
 		else if (visibleMap[node.y][node.x] &&
-				type.equals(TerrainType.GRASS) &&														//The only interesting thing about grass
-				Simulation.sim.getScenario().getAgentAtPos(node.y, node.x)!=null &&						//are the agents on it -
-				!Simulation.sim.getScenario().getAgentAtPos(node.y, node.x).getTeam().equals(lnkTeam))	//enemy agents, to be precise
+				type.equals(TerrainType.GRASS) &&                                                        //The only interesting thing about grass
+				Simulation.sim.getScenario().getAgentAtPos(node.y, node.x) != null &&                        //are the agents on it -
+				!Simulation.sim.getScenario().getAgentAtPos(node.y, node.x).getTeam().equals(lnkTeam))    //enemy agents, to be precise
 		{
 			foundEnemy(node);
 		}
@@ -102,7 +103,7 @@ public class PathfinderGoals
 		int missingObjects = 0;
 		for (TerrainType terrainType : objectsToFind.keySet())
 		{
-			missingObjects += objectsToFind.get(terrainType).intValue() - objectsFound.get(terrainType).size();
+			missingObjects += objectsToFind.get(terrainType) - objectsFound.get(terrainType).size();
 		}
 		int missingEnemies = enemiesToFind - enemiesFound.size();
 		return (missingObjects+missingEnemies<=0);

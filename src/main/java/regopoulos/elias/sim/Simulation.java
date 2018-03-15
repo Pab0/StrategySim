@@ -3,12 +3,16 @@ package regopoulos.elias.sim;
 import regopoulos.elias.log.Logger;
 import regopoulos.elias.scenario.Scenario;
 import regopoulos.elias.scenario.ai.NetStorage;
+import regopoulos.elias.scenario.ai.QLearning;
+import regopoulos.elias.scenario.ai.Reward;
 import regopoulos.elias.ui.SimulationUI;
-import regopoulos.elias.ui.gui.SimWindow;
+//import regopoulos.elias.ui.gui.SimWindow;
+
+import java.io.InputStream;
+import java.util.Properties;
 
 public class Simulation
 {
-	private static final int DEFAULT_SCENARIO_RUN_NUMBER = 5;	//TODO set this to something higher
 	public static Simulation sim;
 	private Scenario scenario;
 	private SimulationUI simUI;
@@ -18,7 +22,23 @@ public class Simulation
 
 	public Simulation()
 	{
-		this.scenarioRunNumber = DEFAULT_SCENARIO_RUN_NUMBER;
+		loadProperties();
+		Reward.loadProperties();
+		QLearning.loadProperties();
+	}
+
+	private void loadProperties()
+	{
+		Properties prop = new Properties();
+		try (InputStream fis = Simulation.class.getClassLoader().getResourceAsStream("SimulationLoop.properties"))
+		{
+			prop.loadFromXML(fis);
+			this.scenarioRunNumber = Integer.parseInt(prop.getProperty("ScenarioRunAmount"));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void setScenario(Scenario scenario)

@@ -52,6 +52,7 @@ public class OptionsStage extends Stage
 
 	OptionsStage()
 	{
+		ScenarioOptions.loadProperties();
 		this.resourcesInMap	= 	FXCollections.observableArrayList();
 		this.teamsInMap 	=	FXCollections.observableArrayList();
 		this.resourceGoals 		= new EnumMap<>(TerrainType.class);
@@ -281,6 +282,8 @@ public class OptionsStage extends Stage
 		System.out.println("Chose file " + mapFile.getName());
 		this.map = new Map(mapFile);
 		this.map.analyzeMap();
+		this.resourcesInMap.clear();
+		this.resourceGoals.clear();
 		this.resourcesInMap.setAll(this.map.getResourcesInMap());
 		this.teamsInMap.setAll(this.map.getTeamsInMap());
 		drawMap();

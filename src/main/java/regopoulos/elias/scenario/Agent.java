@@ -242,6 +242,9 @@ public class Agent
 		//Update Q value, applying death penalty (called "reward" for consistency and marketing purposes)
 		if (this.lnkTeam.getPlanner().usesNeuralNet())
 		{
+			//if agent is also selected on ActionMap, possibleActions gets assigned null upon death,
+			//so we re-instantiate the actions
+			this.getTeam().getPlanner().updatePossibleActions(this);
 			WinterAI winterAI = (WinterAI)(this.lnkTeam.getPlanner());
 			winterAI.getQLearning().updateQValue(this, this.action, false);
 		}

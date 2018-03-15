@@ -35,10 +35,6 @@ public class ActionPane extends VBox implements Updateable
 		actionWorth.setPrefHeight(200);
 		this.getChildren().add(actionWorth);
 		this.setPrefWidth(width);
-
-		this.getChildren().add(new Separator());
-
-		this.getChildren().add(new Label("Neural Network goes here"));
 	}
 
 	@Override

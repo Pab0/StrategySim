@@ -3,6 +3,7 @@ package regopoulos.elias.scenario.ai;
 import regopoulos.elias.scenario.*;
 import regopoulos.elias.sim.Simulation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -237,10 +238,10 @@ public class State
 		{
 			int amountToConsider = actionType.getAmountToConsider();
 			int amountConsidered = 0;
-			Action foo[] = lnkAgent.getPossibleActions().stream().
+			Action[] actionsOfType = lnkAgent.getPossibleActions().stream().
 					filter(action -> action.getType().equals(actionType)).
 					toArray(Action[]::new);
-			for (Action action : foo)
+			for (Action action : actionsOfType)
 			{
 				actions[outputIndex++] = action;
 				amountConsidered++;

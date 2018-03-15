@@ -7,7 +7,9 @@ import regopoulos.elias.scenario.pathfinding.Pathfinder;
 import regopoulos.elias.scenario.pathfinding.PathfinderGoals;
 import regopoulos.elias.sim.Simulation;
 
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**Responsible for selecting Actions and setting goals,
  * which are then fed to the pathfinder.
@@ -23,12 +25,27 @@ import java.util.ArrayList;
  */
 public abstract class Planner
 {
-	public static final String DEFAULT_AI = "WinterAI";
+	public static String DEFAULT_AI = "WinterAI";
 	Team lnkTeam;
 
 	public Planner(Team lnkTeam)
 	{
+		loadProperties();
 		this.lnkTeam = lnkTeam;
+	}
+
+	private void loadProperties()
+	{
+		Properties prop = new Properties();
+		try (InputStream fis = Planner.class.getClassLoader().getResourceAsStream("Planner.properties"))
+		{
+			prop.loadFromXML(fis);
+			Planner.DEFAULT_AI = prop.getProperty("DefaultAI");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public Action getNextAction(Agent agent)

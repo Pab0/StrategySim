@@ -10,20 +10,23 @@ import regopoulos.elias.ui.gui.Camera;
 import regopoulos.elias.ui.gui.Renderer;
 import regopoulos.elias.ui.gui.SimWindow;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 import static regopoulos.elias.sim.TimerGranularity.AGENT;
 
 /**Acts as the game loop
  */
 public class SimLoop extends AnimationTimer
 {
-	private static final double MAX_SIM_TICK_TIME = 10000.0;	//in ms
-	private static final double MIN_SIM_TICK_TIME = 0.1;			//in ms
-	private static final double DEFAULT_SIM_TICK_TIME = MIN_SIM_TICK_TIME;	//in ms
+	private static double MAX_SIM_TICK_TIME;	//in ms
+	private static double MIN_SIM_TICK_TIME;			//in ms
+	private static int MAX_ROUNDS_COUNT;	//maximum rounds to loop through until scenario is reset
 
 	private TimerGranularity granularity;
 	private boolean isPaused;	//Concerns simulation. Rendering speed remains independent
 	private boolean isFinished;
-	private double simulationTickTime = DEFAULT_SIM_TICK_TIME;	//time to wait, in ms, between different each simulation's tick. Rendering speed remains independent.
+	private double simulationTickTime;	//time to wait, in ms, between different each simulation's tick. Rendering speed remains independent.
 	private double lastSimTick;	//in ms
 	private double msPassed;
 
@@ -39,6 +42,7 @@ public class SimLoop extends AnimationTimer
 
 	public SimLoop()
 	{
+		loadProperties();
 		this.granularity = AGENT;
 		this.isPaused = false;
 		this.lnkSim = Simulation.sim;
@@ -49,6 +53,23 @@ public class SimLoop extends AnimationTimer
 		this.lnkRenderer = sw.getRenderer();
 		this.roundIndicator = new SimpleStringProperty("Round indicator");
 		this.simTickTimeIndicator = new SimpleStringProperty("Sim tick indicator");
+	}
+
+	private void loadProperties()
+	{
+		Properties prop = new Properties();
+		try (InputStream fis = SimLoop.class.getClassLoader().getResourceAsStream("SimulationLoop.properties"))
+		{
+			prop.loadFromXML(fis);
+			SimLoop.MAX_SIM_TICK_TIME = Double.parseDouble(prop.getProperty("MaxSimTickTime"));
+			SimLoop.MIN_SIM_TICK_TIME = Double.parseDouble(prop.getProperty("MinSimTickTime"));
+			SimLoop.MAX_ROUNDS_COUNT  = Integer.parseInt(prop.getProperty("MaxRoundsAllowed"));
+			this.simulationTickTime   = MIN_SIM_TICK_TIME;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public SimLoop restartedLoop()
@@ -177,6 +198,11 @@ public class SimLoop extends AnimationTimer
 		if (lnkSim.getScenario().hasWinner())
 		{
 			endScenario();
+		}
+		if (getRoundsCount()>SimLoop.MAX_ROUNDS_COUNT)
+		{
+			Simulation.sim.log("Reached " + MAX_ROUNDS_COUNT + " rounds, resetting.");
+			lnkSim.getScenario().restart();
 		}
 		if (!isFinished)
 		{

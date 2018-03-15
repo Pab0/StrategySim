@@ -17,8 +17,9 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Team;
 
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 public class QLearning
@@ -28,15 +29,14 @@ public class QLearning
 	//Number of iterations per minibatch
 	private static final int iterations = 1;
 	//Network learning rate
-	private static double learningRate = 0.001; //was 0.0001
+	private static double learningRate; //was 0.001
 	private static final Random rng = new Random(seed);
-	private static final String FILE_NAME= "RLStrategyNet.zip";
 
-	private static final double GAMMA = 0.99;
-	private static final double INITIAL_EPSILON = 0.5;
-	private static final double FINAL_EPSILON = 0.1;
-	private static final double EPSILON_DECAY = 0.01;	//as percent of current epsilon
-	private static final int EPSILON_INCREASE_THRESHOLD = 1000;	//Determines # of agent steps without action, after which epsilon is increasing instead of decaying
+	private static double GAMMA;	//was 0.99
+	private static double INITIAL_EPSILON; 	//was 0.5
+	private static double FINAL_EPSILON; 	//was 0.1;
+	private static double EPSILON_DECAY;	//as percent of current epsilon - was 0.01
+	private static int EPSILON_INCREASE_THRESHOLD;	//Determines # of agent steps without action, after which epsilon is increasing instead of decaying - was 1000
 	private int stepsSinceLastAction;	//Counts agent steps since last action, to be used in epsilon value updates
 	private double epsilon = INITIAL_EPSILON; 	//decays
 
@@ -44,6 +44,26 @@ public class QLearning
 	private int nInputCount, nHiddenCount, nOutputCount;
 
 	private State oldState, curState;
+
+	public static void loadProperties()
+	{
+		Properties prop = new Properties();
+		try (InputStream fis = QLearning.class.getClassLoader().getResourceAsStream("QLearning.properties"))
+		{
+			prop.loadFromXML(fis);
+			QLearning.learningRate = Double.parseDouble(prop.getProperty("LearningRate"));
+			QLearning.GAMMA = Double.parseDouble(prop.getProperty("Gamma"));
+			QLearning.INITIAL_EPSILON = Double.parseDouble(prop.getProperty("EpsilonInitial"));
+			QLearning.FINAL_EPSILON = Double.parseDouble(prop.getProperty("EpsilonFinal"));
+			QLearning.EPSILON_DECAY = Double.parseDouble(prop.getProperty("EpsilonDecay"));
+			QLearning.EPSILON_INCREASE_THRESHOLD = Integer.parseInt(prop.getProperty("EpsilonIncreaseThreshold"));
+
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 
 	QLearning(Team lnkTeam)
 	{
@@ -184,7 +204,7 @@ public class QLearning
 		//r (reward)
 		double reward = Reward.getReward(agent, action, didAction);
 		//s (old State)
-		double[] oldStateVector = getOldState().getStateVector();
+		double[] oldStateVector = getOldState(agent).getStateVector();
 		//s' (new State)
 		double[] curStateVector = getCurState().getStateVector();
 		//Q(s,a) (old output array)
@@ -235,22 +255,26 @@ public class QLearning
 		epsilon = Math.min(newEpsilon, QLearning.INITIAL_EPSILON);
 	}
 
-	public void setOldState(State oldState)
+	private void setOldState(State oldState)
 	{
 		this.oldState = oldState;
 	}
 
-	public State getOldState()
+	private State getOldState(Agent agent)
 	{
+		if (oldState==null)	//agent hasn't had its first state update yet
+		{
+			oldState = agent.getState();
+		}
 		return oldState;
 	}
 
-	public void setCurState(State curState)
+	void setCurState(State curState)
 	{
 		this.curState = curState;
 	}
 
-	public State getCurState()
+	private State getCurState()
 	{
 		return curState;
 	}

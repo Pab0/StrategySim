@@ -5,17 +5,38 @@ import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Resource;
 import regopoulos.elias.scenario.TerrainType;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 
 /** Static class, calculating the reward of each action */
 public class Reward
 {
-	private static double WIN_REWARD		= 10;
-	private static double DROP_OFF_REWARD 	= 1;	//only the resources still needed
-	private static double GATHER_REWARD 	= 0.5;	//only the resources still needed
-	private static double ATTACK_REWARD 	= -10.001;	//reward per damage point
-	private static double KILL_REWARD		= 1;
-	private static double DIE_REWARD		= -2;
+	private static double WIN_REWARD;
+	private static double DROP_OFF_REWARD;	//only the resources still needed
+	private static double GATHER_REWARD;	//only the resources still needed
+	private static double ATTACK_REWARD;	//reward per damage point
+	private static double KILL_REWARD;
+	private static double DIE_REWARD;
 
+	public static void loadProperties()
+	{
+		Properties prop = new Properties();
+		try (InputStream fis = Reward.class.getClassLoader().getResourceAsStream("Reward.properties"))
+		{
+			prop.loadFromXML(fis);
+			Reward.WIN_REWARD = Double.parseDouble(prop.getProperty("WinReward"));
+			Reward.DROP_OFF_REWARD = Double.parseDouble(prop.getProperty("DropOffReward"));
+			Reward.GATHER_REWARD = Double.parseDouble(prop.getProperty("GatherReward"));
+			Reward.ATTACK_REWARD = Double.parseDouble(prop.getProperty("AttackReward"));
+			Reward.KILL_REWARD = Double.parseDouble(prop.getProperty("KillReward"));
+			Reward.DIE_REWARD = Double.parseDouble(prop.getProperty("DieReward"));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 	static double getReward(Agent agent, Action action, boolean didAction)
 	{
 		double reward = 0;

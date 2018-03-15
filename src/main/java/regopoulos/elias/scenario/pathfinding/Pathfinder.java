@@ -8,9 +8,11 @@ import regopoulos.elias.scenario.TerrainType;
 import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.sim.Simulation;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**Main pathfinding class.
@@ -22,16 +24,31 @@ import java.util.stream.Collectors;
  */
 public class Pathfinder
 {
-	private static final int MAX_CLOSED_SET = 1_000;	//max size of closed set, before giving up searching for goals
+	private static int MAX_CLOSED_SET;	//max size of closed set, before giving up searching for goals
 
 	private List<Node> closedSet, openSet;
 	private PathfinderGoals goals;
 
 	public Pathfinder()
 	{
+		Pathfinder.loadProperties();
 		this.closedSet = new ArrayList<>();
 		this.openSet = new ArrayList<>();
 		this.goals = new PathfinderGoals();
+	}
+
+	private static void loadProperties()
+	{
+		Properties prop = new Properties();
+		try (InputStream fis = Pathfinder.class.getClassLoader().getResourceAsStream("Pathfinding.properties"))
+		{
+			prop.loadFromXML(fis);
+			Pathfinder.MAX_CLOSED_SET = Integer.parseInt(prop.getProperty("MaxGoalSearchingArea"));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	private void setPathfinderGoals(PathfinderGoals pathfinderGoals)
