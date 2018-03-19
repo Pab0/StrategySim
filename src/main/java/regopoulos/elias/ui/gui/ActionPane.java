@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.ai.Action;
+import regopoulos.elias.scenario.ai.Planner;
 import regopoulos.elias.scenario.ai.QLearning;
 import regopoulos.elias.scenario.ai.WinterAI;
 import regopoulos.elias.sim.Simulation;
@@ -20,6 +21,7 @@ public class ActionPane extends VBox implements Updateable
 {
 	ListView<Action> actionView;
 	ListView<String> actionWorth;
+	Label epsilonLabel;
 
 	protected ActionPane(int width)
 	{
@@ -34,6 +36,8 @@ public class ActionPane extends VBox implements Updateable
 		actionWorth = new ListView<>();
 		actionWorth.setPrefHeight(200);
 		this.getChildren().add(actionWorth);
+		epsilonLabel = new Label("Epsilon:");
+		this.getChildren().add(epsilonLabel);
 		this.setPrefWidth(width);
 	}
 
@@ -48,12 +52,20 @@ public class ActionPane extends VBox implements Updateable
 		}
 		else
 		{
-			selAgent.getTeam().getPlanner().updatePossibleActions(selAgent);
+			Planner selPlanner = selAgent.getTeam().getPlanner();
+			selPlanner.updatePossibleActions(selAgent);
 			actionView.setItems(FXCollections.observableArrayList(
-					Simulation.sim.getSimUI().getSelectedAgent().getPossibleActions()));
-			if (selAgent.getTeam().getPlanner().usesNeuralNet())
+					selAgent.getPossibleActions()));
+			if (selPlanner.usesNeuralNet())
 			{
 				actionWorth.setItems(getActionWorth());
+				WinterAI nnPlanner = (WinterAI)selPlanner;
+				epsilonLabel.setText("Epsilon: " + nnPlanner.getQLearning().getEpsilon());
+			}
+			else
+			{
+				actionWorth.setItems(null);
+				epsilonLabel.setText("");
 			}
 		}
 	}

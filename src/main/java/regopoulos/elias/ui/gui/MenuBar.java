@@ -1,13 +1,11 @@
 package regopoulos.elias.ui.gui;
 
 import javafx.geometry.Orientation;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
+import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.ai.NetStorage;
 import regopoulos.elias.sim.Simulation;
 import regopoulos.elias.sim.TimerGranularity;
@@ -83,23 +81,14 @@ public class MenuBar extends ToolBar implements Updateable
 	/** Meant only for random debugging */
 	private void debug()
 	{
-		FileChooser fc = new FileChooser();
-		fc.setTitle("Choose existing neural network");
-		File path = new File(NetStorage.NET_DIRECTORY);
-		path.mkdirs();
-		fc.setInitialDirectory(new File(NetStorage.NET_DIRECTORY));
-		fc.getExtensionFilters().add(
-				new FileChooser.ExtensionFilter("Neural network created with DL4J", "*.zip"));
-		File netFile = fc.showOpenDialog(null);
-		try
+		Agent selAgent = Simulation.sim.getSimUI().getSelectedAgent();
+		if (selAgent==null || selAgent.getType()==null || !selAgent.getTeam().getPlanner().usesNeuralNet())
 		{
-			MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(netFile);
-//				this.netsToLoad.put(teamType, netFile.getName());
-//				this.teamNets.put(teamType, net);
+			return;
 		}
-		catch( Exception e)
+		else
 		{
-			e.printStackTrace();
+			new Alert(Alert.AlertType.INFORMATION, selAgent.getState().prettyPrint()).showAndWait();
 		}
 	}
 

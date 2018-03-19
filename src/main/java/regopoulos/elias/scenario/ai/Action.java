@@ -14,6 +14,7 @@ public class Action
 {
 	private Node node;			//location of Point of Interest on map
 	ActionType type;
+	boolean selectedRandomly;		//whether epsilon-greedy chose it randomly among actions
 	private TerrainType resourceDroppedOff;	//last dropped off resource - only used for rewarding
 	private Agent enemyAgent;				//last attacked enemy agent - only used for rewarding
 	ArrayList<Dimension2D> path;	//calculated path from agent to goal
@@ -89,7 +90,14 @@ public class Action
 
 	public void setPathCost()
 	{
-		this.pathCost = this.node.getParent().getGCost();	//Gets cost of path from agent to goal node (exclusive)
+		if (this.node.getParent()!=null)
+		{
+			this.pathCost = this.node.getParent().getGCost();	//Gets cost of path from agent to goal node (exclusive)
+		}
+		else
+		{
+			this.pathCost = 0;
+		}
 	}
 
 	public int getPathCost()
@@ -120,6 +128,16 @@ public class Action
 	public Agent getEnemyAgent()
 	{
 		return enemyAgent;
+	}
+
+	void setSelectedRandomly(boolean selectedRandomly)
+	{
+		this.selectedRandomly = selectedRandomly;
+	}
+
+	public boolean getSelectedRandomly()
+	{
+		return this.selectedRandomly;
 	}
 
 	public void doAction(Agent lnkAgent) throws BadVisibilityException

@@ -10,6 +10,7 @@ import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.MapViewTeam;
 import regopoulos.elias.scenario.Resource;
 import regopoulos.elias.scenario.Team;
+import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.sim.Simulation;
 
 public class TeamPane extends VBox implements Updateable
@@ -109,9 +110,10 @@ public class TeamPane extends VBox implements Updateable
 			this.plannerLabel.setText("");
 			return;
 		}
-		String str = "Action: " + "\n";
-		str += selectedAgent.getAction() + "\n\n";
-		str += "Path cost: " + ((selectedAgent.getAction()==null) ? 0 : selectedAgent.getAction().getPathCost()) + "\n";
+		Action action = selectedAgent.getAction();
+		String str = (action!=null && action.getSelectedRandomly())?"Random action: \n":"Action: \n";
+		str += action + "\n\n";
+		str += "Path cost: " + ((action==null) ? 0 : action.getPathCost()) + "\n";
 		str += "Position: ";
 		str += (int)selectedAgent.pos.getWidth() + ",";
 		str += (int)selectedAgent.pos.getHeight() + "\n";

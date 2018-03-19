@@ -5,7 +5,7 @@ import regopoulos.elias.scenario.TerrainType;
 public enum ActionType
 {
 	EXPLORE		("Exploring", "XPLR", TerrainType.UNKNOWN, 3),
-	GATHER_WOOD	("Chopping trees", "WOOD", TerrainType.TREE, 3),
+	GATHER_WOOD	("Cutting tree", "WOOD", TerrainType.TREE, 3),
 	GATHER_STONE("Mining stone", "STNE", TerrainType.STONE, 2),
 	GATHER_GOLD	("Mining gold", "GOLD", TerrainType.GOLD, 2),
 	ATTACK	("Attacking", "ATTK", 3),

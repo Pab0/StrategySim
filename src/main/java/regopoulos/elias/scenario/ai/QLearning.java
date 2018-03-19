@@ -18,9 +18,7 @@ import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.Team;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 
 public class QLearning
 {
@@ -70,6 +68,11 @@ public class QLearning
 		setNet(lnkTeam);
 	}
 
+	public double getEpsilon()
+	{
+		return epsilon;
+	}
+
 	private void setNet(Team lnkTeam)
 	{
 		setNodeCounts();
@@ -112,10 +115,14 @@ public class QLearning
 	Action getMaxQAction(State state)
 	{
 		Action action;
-		QLearning.rng.setSeed(state.hashCode());	//set random to specific value to avoid "flickering" between two actions (NN-chosen and epsilon-random)
+		QLearning.rng.setSeed(Arrays.hashCode(state.getStateVector()));	//set random to specific value to avoid "flickering" between two actions (NN-chosen and epsilon-random)
 		if (QLearning.rng.nextDouble()<this.epsilon)
 		{
 			action = getRandomAction(state);
+			if (action!=null)
+			{
+				action.setSelectedRandomly(true);
+			}
 		}
 		else
 		{
@@ -178,16 +185,16 @@ public class QLearning
 	private static Action getRandomAction(State state)
 	{
 		Action[] actions = state.getActions();
-		int index = QLearning.rng.nextInt(actions.length);
-		int initIndex = index;
+		List<Action> shuffledActions = Arrays.asList(actions);
+		Collections.shuffle(shuffledActions);
 		Action action = null;
-		//Picks a random index and searches forward until a non-null action was found,
+		int index = 0;
+		//Iterates over a shuffled actionlist until a non-null action was found,
 		//or the array has been fully searched.
 		while (action==null)
 		{
-			action = actions[index++];
-			index %= actions.length;
-			if (index==initIndex)	//array fully searched, return null
+			action = shuffledActions.get(index++);
+			if (index>=shuffledActions.size())	//array fully searched, return null
 			{
 				break;
 			}
@@ -237,22 +244,20 @@ public class QLearning
 	/** Implements epsilon decay */
 	public void updateEpsilon(boolean didAction)
 	{
-		double newEpsilon = epsilon;
 		if (didAction)
 		{
 			this.stepsSinceLastAction = 0;
-			newEpsilon = epsilon*(1-QLearning.EPSILON_DECAY);
 		}
 		else
 		{
 			this.stepsSinceLastAction++;
-			if (stepsSinceLastAction>QLearning.EPSILON_INCREASE_THRESHOLD)
-			{
-				newEpsilon = epsilon*(1+QLearning.EPSILON_DECAY);
-			}
 		}
-		epsilon = Math.max(newEpsilon, QLearning.FINAL_EPSILON);
-		epsilon = Math.min(newEpsilon, QLearning.INITIAL_EPSILON);
+		double increase = (stepsSinceLastAction>QLearning.EPSILON_INCREASE_THRESHOLD)?
+				1+QLearning.EPSILON_DECAY:
+				1-QLearning.EPSILON_DECAY;
+		epsilon *= increase;
+		epsilon = Math.max(epsilon, QLearning.FINAL_EPSILON);
+		epsilon = Math.min(epsilon, QLearning.INITIAL_EPSILON);
 	}
 
 	private void setOldState(State oldState)
