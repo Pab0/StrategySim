@@ -1,9 +1,7 @@
 package regopoulos.elias.log;
 
 import regopoulos.elias.scenario.*;
-import regopoulos.elias.scenario.ai.AutumnAI;
 import regopoulos.elias.scenario.ai.NetStorage;
-import regopoulos.elias.scenario.ai.WinterAI;
 import regopoulos.elias.sim.Simulation;
 
 import java.io.BufferedWriter;
@@ -113,7 +111,7 @@ public class Logger implements LogOutput
 		}
 	}
 
-	/**Writes general info about the Simulation on th top of the log file */
+	/**Writes general info about the Simulation on the top of the log file */
 	private void logHeaders() throws IOException
 	{
 		Scenario scenario = lnkSim.getScenario();

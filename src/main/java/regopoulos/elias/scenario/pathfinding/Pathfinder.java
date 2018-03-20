@@ -9,10 +9,7 @@ import regopoulos.elias.scenario.ai.Action;
 import regopoulos.elias.sim.Simulation;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**Main pathfinding class.
@@ -26,14 +23,14 @@ public class Pathfinder
 {
 	private static int MAX_CLOSED_SET;	//max size of closed set, before giving up searching for goals
 
-	private List<Node> closedSet, openSet;
+	private Set<Node> openSet,closedSet;
 	private PathfinderGoals goals;
 
 	public Pathfinder()
 	{
 		Pathfinder.loadProperties();
-		this.closedSet = new ArrayList<>();
-		this.openSet = new ArrayList<>();
+		this.closedSet = new HashSet<>();
+		this.openSet = new HashSet<>();
 		this.goals = new PathfinderGoals();
 	}
 
@@ -167,7 +164,7 @@ public class Pathfinder
 	 */
 	private void sweepForGoals(boolean[][] visibleMap, Team lnkTeam, boolean ignoreOccupants) throws NotEnoughTilesFoundException
 	{
-		this.openSet.addAll(openSet.get(0).getNeighbours());
+		this.openSet.addAll(openSet.stream().findFirst().get().getNeighbours());
 		while (!this.goals.isFinished())
 		{
 			if (openSet.isEmpty())	//no tiles on map
@@ -194,7 +191,7 @@ public class Pathfinder
 			closedSet.addAll(openSet);
 			openSet = openSet.stream().
 					filter(node -> NodeChecker.nodeIsTraversable(node, visibleMap)).
-					collect(Collectors.toList());
+					collect(Collectors.toCollection(HashSet::new));
 			if (!ignoreOccupants)
 			{
 				openSet.removeIf(node -> !NodeChecker.isNotOccupied(node, visibleMap));
@@ -208,7 +205,7 @@ public class Pathfinder
 			openSet = neighbours.stream().
 					distinct().
 					filter(node -> !closedSet.contains(node)).
-					collect(Collectors.toList());
+					collect(Collectors.toCollection(HashSet::new));
 		}
 	}
 
