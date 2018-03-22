@@ -2,9 +2,7 @@ package regopoulos.elias.ui.gui;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import regopoulos.elias.scenario.Agent;
 import regopoulos.elias.scenario.MapViewTeam;
@@ -20,6 +18,7 @@ public class TeamPane extends VBox implements Updateable
 	private ComboBox agentBox;
 	private Label resourceLabel;
 	private Label plannerLabel;
+	private Button stateBtn;
 
 	TeamPane(int width)
 	{
@@ -49,6 +48,9 @@ public class TeamPane extends VBox implements Updateable
 		this.plannerLabel = new Label();
 		this.getChildren().add(plannerLabel);
 
+		this.stateBtn = new Button("Show state");
+		this.stateBtn.setOnAction(e -> showState());
+		this.getChildren().add(stateBtn);
 	}
 
 	@Override
@@ -135,5 +137,22 @@ public class TeamPane extends VBox implements Updateable
 			mapViewTeams[i] = realTeams[i-1];
 		}
 		return mapViewTeams;
+	}
+
+	private void showState()
+	{
+		Agent selAgent = Simulation.sim.getSimUI().getSelectedAgent();
+		if (selAgent==null || selAgent.getType()==null || !selAgent.getTeam().getPlanner().usesNeuralNet())
+		{
+			return;
+		}
+		else
+		{
+			Alert alert = new Alert(Alert.AlertType.INFORMATION, selAgent.getState().prettyPrint());
+			alert.getDialogPane().setMinWidth(960);
+			alert.setGraphic(null);
+			alert.setHeaderText("Status of " + selAgent + ", of " + selAgent.getTeam());
+			alert.showAndWait();
+		}
 	}
 }

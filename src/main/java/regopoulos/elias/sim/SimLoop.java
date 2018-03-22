@@ -201,7 +201,8 @@ public class SimLoop extends AnimationTimer
 		}
 		if (getRoundsCount()>SimLoop.MAX_ROUNDS_COUNT)
 		{
-			Simulation.sim.log("Reached " + MAX_ROUNDS_COUNT + " rounds, resetting.");
+			String str = "Reached " + MAX_ROUNDS_COUNT + " rounds, resetting.";
+			Simulation.sim.getLogger().roundLimitExceeded(str);
 			lnkSim.getScenario().restart();
 		}
 		if (!isFinished)

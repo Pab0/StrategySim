@@ -157,12 +157,14 @@ public class Agent
 
 	private void moveOrDo() throws BadVisibilityException
 	{
-		boolean didAction = false;	//used for neural network reward
-		if (action==null)	//No Zugzwang
+		//don't update agent if he makes no move/takes no action
+		if (action==null)
 		{
-
+			return;
 		}
-		else if (this.action.getPath().size()>1)
+
+		boolean didAction = false;	//used for neural network reward
+		if (this.action.getPath().size()>1)
 		{
 			move();
 		}

@@ -91,6 +91,20 @@ public class Logger implements LogOutput
 		}
 	}
 
+	/** Logs to the statistical log file, whenever the round limit has been exceeded and the simulation has to restart */
+	public void roundLimitExceeded(String str)
+	{
+		Simulation.sim.getSimUI().log(str);
+		try
+		{
+			this.statsLogWriter.write(str);
+		}
+		catch (IOException ioe)
+		{
+			ioe.printStackTrace();
+		}
+	}
+
 	public void start()
 	{
 		this.lnkSim = Simulation.sim;

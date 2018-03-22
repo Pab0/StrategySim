@@ -2,15 +2,9 @@ package regopoulos.elias.ui.gui;
 
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
-import javafx.stage.FileChooser;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.util.ModelSerializer;
 import regopoulos.elias.scenario.Agent;
-import regopoulos.elias.scenario.ai.NetStorage;
 import regopoulos.elias.sim.Simulation;
 import regopoulos.elias.sim.TimerGranularity;
-
-import java.io.File;
 
 public class MenuBar extends ToolBar implements Updateable
 {
@@ -26,7 +20,7 @@ public class MenuBar extends ToolBar implements Updateable
 		this.setPrefSize(width,height);
 		this.setOrientation(Orientation.HORIZONTAL);
 		this.getItems().add(newBtn);
-		this.getItems().add(dbgBtn);
+//		this.getItems().add(dbgBtn);
 		this.getItems().add(new Separator());
 
 		this.getItems().add(this.roundIndicatorLabel);

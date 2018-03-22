@@ -305,6 +305,7 @@ public class State
 		sb.append("Team inputs:\n");
 		for (int i=0; i<resourceNum; i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Needed Resource " + i + ":");
 			sb.append(String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
@@ -313,11 +314,15 @@ public class State
 		sb.append("\nAgent inputs:\n");
 		for (int i=0; i<resourceNum; i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Resource " + i + " carrying:");
 			sb.append(String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
+		sb.append("[" + index + "]");
 		sb.append("HP: " + String.format("%.3f",this.stateVector[index++]) + "\n");
+		sb.append("[" + index + "]");
 		sb.append("Attack: " + String.format("%.3f",this.stateVector[index++]) + "\n");
+		sb.append("[" + index + "]");
 		sb.append("Defense: " + String.format("%.3f",this.stateVector[index++]) + "\n");
 
 		//Actions
@@ -325,40 +330,55 @@ public class State
 		sb.append("Exploring:\n");
 		for (int i=0; i<ActionType.EXPLORE.getAmountToConsider(); i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Is available: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Path length: " + String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
 		sb.append("Gathering Wood:\n");
 		for (int i=0; i<ActionType.GATHER_WOOD.getAmountToConsider(); i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Is available: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Path length: " + String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
 		sb.append("Gathering Stone:\n");
 		for (int i=0; i<ActionType.GATHER_STONE.getAmountToConsider(); i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Is available: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Path length: " + String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
 		sb.append("Gathering Gold:\n");
 		for (int i=0; i<ActionType.GATHER_GOLD.getAmountToConsider(); i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Is available: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Path length: " + String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
 		sb.append("Attacking:\n");
 		for (int i=0; i<ActionType.ATTACK.getAmountToConsider(); i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Is available: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Path length: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Enemy HP: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Enemy Attack: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Enemy Defense: " + String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
 		sb.append("Dropping off:\n");
 		for (int i=0; i<ActionType.DROP_OFF.getAmountToConsider(); i++)
 		{
+			sb.append("[" + index + "]");
 			sb.append("Is available: " + String.format("%.3f",this.stateVector[index++]) + ", ");
+			sb.append("[" + index + "]");
 			sb.append("Path length: " + String.format("%.3f",this.stateVector[index++]) + "\n");
 		}
 		return sb.toString();

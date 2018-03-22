@@ -84,7 +84,7 @@ public class Reward
 		double gatherReward = 0;
 		TerrainType terrainGathered = action.getType().getTerrainType();
 		Resource teamResource = agent.getTeam().getResource(terrainGathered);
-		if (teamResource.getCurrent()<=teamResource.getGoal())
+		if (teamResource.getCurrent()<teamResource.getGoal())
 		{
 			gatherReward = Reward.GATHER_REWARD;
 		}
