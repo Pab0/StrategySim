@@ -180,6 +180,24 @@ public class QLearning
 		return maxIndex;
 	}
 
+	/** @return index of action within actionVector, or -1 if none is found */
+	private static int getActionIndex(State state, Action action)
+	{
+		int maxIndex = -1;
+		if (action!=null)
+		{
+			Action[] actions = state.getActions();
+			for (int i = 0; i<actions.length; i++)
+			{
+				if (action.equals(actions[i]))
+				{
+					maxIndex = i;
+				}
+			}
+		}
+		return maxIndex;
+	}
+
 	/** @return random eligible action.
 	 * If no eligible actions are available, return null instead */
 	private static Action getRandomAction(State state)
@@ -218,13 +236,13 @@ public class QLearning
 		INDArray output = getActionVector(oldStateVector, net);
 		//maxQ(s',a) (max ouput of new state array)
 		double maxNewOutput = getMaxEligibleOutput(getActionVector(curStateVector, net),getCurState());
-		//index of maxQ(s',a)
-		int maxOutputIndex = getMaxEligibleOutputIndex(getActionVector(curStateVector,net),getCurState());
+		//index of action within old output vector
+		int actionIndex = getActionIndex(this.oldState, action);
 
-		if (maxOutputIndex>=0)	//don't train network if there is no eligible action
+		if (actionIndex>=0)	//don't train network if there is no eligible action
 		{
 			//new targetVector (aka updated output vector)
-			INDArray targetVector = getTargetVector(output,maxNewOutput,maxOutputIndex,reward);
+			INDArray targetVector = getTargetVector(output,maxNewOutput,actionIndex,reward);
 
 			DataSet dataSet = new DataSet(Nd4j.create(oldStateVector), targetVector);
 			List<DataSet> listDs = dataSet.asList();
