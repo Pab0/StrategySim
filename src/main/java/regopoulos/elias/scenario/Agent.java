@@ -26,6 +26,7 @@ public class Agent
 	public Dimension2D pos;	//agent's current position
 	private ArrayList<Action> possibleActions;	//list of actions to be examined, one of which will be chosen.
 	private Action action;	//action to be carried out by agent
+	private Action lastAction;	//last action chosen by agent
 	private Agent killer;	//Killer of this agent - only set upon death
 	private HashMap<Dimension2D, Integer> nodeRisks;
 	private State state;
@@ -180,6 +181,7 @@ public class Agent
 			winterAI.getQLearning().updateQValue(this, this.action, didAction);
 			winterAI.getQLearning().updateEpsilon(didAction);
 		}
+		this.lastAction = action;
 	}
 
 	private void move()
@@ -266,6 +268,11 @@ public class Agent
 		//Ask Pathfinder for closest reachable goal, and path towards it
 		//move on path, or carry out action (can't do both in same round)
 		moveOrDo();
+	}
+
+	public Action getLastAction()
+	{
+		return lastAction;
 	}
 
 	public String toString()

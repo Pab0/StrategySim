@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 
-/** Static class, calculating the reward of each action */
+/** Static class, calculating the reward of each action
+ * Rewards are given in the range [0,1], and multiplied by the RewardFactor.
+ * */
 public class Reward
 {
 	private static double WIN_REWARD;
@@ -18,6 +20,8 @@ public class Reward
 	private static double ATTACK_REWARD;	//reward per damage point
 	private static double KILL_REWARD;
 	private static double DIE_REWARD;
+	private static double STALLING_REWARD;	//gets "awarded" whenever an action isn't taken (aka on moving), to incentivize quick movement
+	private static double STUBBORNNESS_REWARD;	//gets "awarded" whenever the same action as last time is chosen, to avoid frequent switching between actions
 
 	public static void loadProperties()
 	{
@@ -25,12 +29,15 @@ public class Reward
 		try (InputStream fis = Reward.class.getClassLoader().getResourceAsStream("Reward.properties"))
 		{
 			prop.loadFromXML(fis);
-			Reward.WIN_REWARD = Double.parseDouble(prop.getProperty("WinReward"));
-			Reward.DROP_OFF_REWARD = Double.parseDouble(prop.getProperty("DropOffReward"));
-			Reward.GATHER_REWARD = Double.parseDouble(prop.getProperty("GatherReward"));
-			Reward.ATTACK_REWARD = Double.parseDouble(prop.getProperty("AttackReward"));
-			Reward.KILL_REWARD = Double.parseDouble(prop.getProperty("KillReward"));
-			Reward.DIE_REWARD = Double.parseDouble(prop.getProperty("DieReward"));
+			double factor = Double.parseDouble(prop.getProperty("RewardFactor"));
+			Reward.WIN_REWARD = factor*Double.parseDouble(prop.getProperty("WinReward"));
+			Reward.DROP_OFF_REWARD = factor*Double.parseDouble(prop.getProperty("DropOffReward"));
+			Reward.GATHER_REWARD = factor*Double.parseDouble(prop.getProperty("GatherReward"));
+			Reward.ATTACK_REWARD = factor*Double.parseDouble(prop.getProperty("AttackReward"));
+			Reward.KILL_REWARD = factor*Double.parseDouble(prop.getProperty("KillReward"));
+			Reward.DIE_REWARD = factor*Double.parseDouble(prop.getProperty("DieReward"));
+			Reward.STALLING_REWARD = factor*Double.parseDouble(prop.getProperty("StallingReward"));
+			Reward.STUBBORNNESS_REWARD = factor*Double.parseDouble(prop.getProperty("StubbornnessReward"));
 		}
 		catch (Exception e)
 		{
@@ -56,6 +63,7 @@ public class Reward
 					reward = Reward.getAttackReward(agent, action);
 			}
 		}
+		reward += Reward.getStubbornnessReward(agent, action);
 		if (!agent.isAlive())
 		{
 			reward = Reward.getDieReward();
@@ -110,4 +118,20 @@ public class Reward
 		return dieReward;
 	}
 
+	private static double getStubbornnessReward(Agent agent, Action action)
+	{
+		double stubbornnessReward = 0;
+		if (action!=null && agent.getLastAction()!=null)
+		{
+			if (action.getNode().equals(agent.getLastAction().getNode())) //chose same action
+			{
+				stubbornnessReward = Reward.STUBBORNNESS_REWARD;
+			}
+			else	//chose other action
+			{
+				stubbornnessReward = Reward.STALLING_REWARD;
+			}
+		}
+		return stubbornnessReward;
+	}
 }
